@@ -17,7 +17,7 @@ api_key = 'AIzaSyAkfPnwa9ZqUjB_etqfsG5Y4coMosDAlDI'
 def main():
     ### Config
     filename = "pyra-grid"
-    grid_itv = 50                       # Grid space intervals (meters)
+    grid_itv = 76.2                    # Grid space intervals (meters)
     lat, lon = 38.649007,-90.310687     # Latitude, longitude
     maptype = 'satellite'               # Image type
     markers = ''                        # Optional image markers
@@ -85,6 +85,9 @@ def showGriddedImage(filename, interval, length, meters_per_px):
         itv += interval/meters_per_px
     
     img.show()
+
+    # Save gridded image
+    img.save(f"images/{filename}-gridded.png")
 
 
 if __name__ == "__main__":
