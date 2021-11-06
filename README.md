@@ -4,7 +4,6 @@ WU Rocketry 21-22 Payload Repository
 ~ hello from pi!
 
 Setup:
-'''
 
     sudo apt-get update
 
@@ -14,10 +13,8 @@ Setup:
 
     sudo pip3 install --upgrade setuptools
     
-'''
 
 Library Dependencies:
-'''
 
     pip install Pillow
 
@@ -27,4 +24,3 @@ Library Dependencies:
 
     pip install adafruit-circuitpython-bno055
     
-'''
