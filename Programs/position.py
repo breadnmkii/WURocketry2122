@@ -21,31 +21,53 @@ EARTH_CIRCUMFERENCE = 24901     # (miles)
 LAT_DEGREE          = 364000    # (feet)
 LON_DEGREE          = 288200    # (feet)
 
-    #return 5280*mile
 
-def coord2feet(coord):
-    return ((Decimal(f'{coord[0]}')*Decimal(f'{LAT_DEGREE}')),
-            (Decimal(f'{coord[1]}')*Decimal(f'{LON_DEGREE}')))
 
-# Since we know the image center will be at exactly half of 5000ft (2500,2500 ft), we can calculate distance from TOP-LEFT (0,0) 
-# by simply adding 2500ft to each axis of measurement. Then divide by grid length (250ft) and obtain ceiling to determine grid
-# we are in
-def coord2grid(launch_coord, current_coord):
+## Function to convert coordinates from launch into launch distance
+def coord_to_dist(launch_coord, current_coord):
     coord_correction = (Decimal(f'{launch_coord[0]}') - Decimal(f'{IDEAL_COORD[0]}'), 
                         Decimal(f'{launch_coord[1]}') - Decimal(f'{IDEAL_COORD[1]}'))
 
-    distance_from_launch = coord2feet((Decimal(f'{current_coord[0]}') - Decimal(f'{launch_coord[0]}') + coord_correction[0],
-                            Decimal(f'{current_coord[1]}') - Decimal(f'{launch_coord[1]}') + coord_correction[1]))
+    return coord_to_feet((
+        Decimal(f'{current_coord[0]}') - Decimal(f'{launch_coord[0]}') + coord_correction[0],
+        Decimal(f'{current_coord[1]}') - Decimal(f'{launch_coord[1]}') + coord_correction[1]))
 
-    x_grid = math.ceil((distance_from_launch[1]+2500)/250)
-    y_grid = math.ceil((distance_from_launch[0]+2500)/250)
+def coord_to_feet(coord):
+    return ((Decimal(f'{coord[0]}')*Decimal(f'{LAT_DEGREE}')),
+            (Decimal(f'{coord[1]}')*Decimal(f'{LON_DEGREE}')))
+
+## Function to map launch distance to a grid number
+# Since we know the image center will be at exactly half of 5000ft (2500,2500 ft), we can calculate distance from TOP-LEFT (0,0) 
+# by simply adding 2500ft to each axis of measurement. Then divide by grid length (250ft) and obtain ceiling to determine grid
+# we are in
+def dist_to_grid(launch_disp):
+    x_grid = math.ceil((launch_disp[1]+2500)/250)
+    y_grid = math.ceil((launch_disp[0]+2500)/250)
 
     return (x_grid, y_grid)
     
+# Note: 3D vector in tuple of (x,y,z) 
 
+## Function to integrate change in 3D linear acceleration vector into 3D velocity vector
+# Note: linear acceleration measurement ignores acceleration due to gravity
+# Step 1. 1-D velocity
+# Step 2. 2-d velocity + change in orientation
+# Step 3. enjoy dealing with 3d space
+def integrate_laccel(t0, tf, delta_laccel):
+    return map(lambda a: (0.5)*a*(tf**2-t0**2), delta_laccel)
 
+# Maps a lambda function to add current displacement vector with current velocity vector
+def update_disp(current_disp, current_vel):
+    return map(lambda x, v: x + v, (current_disp, current_vel))
 
+### DO we need this? should we just multiply current velocity vector by time to get
+# ## Function to integrate change in 3D velocity vector into 3D displacement vector
+# # Step 1. 1-D displacement
+# # Step 2. 2-d displacement
+# def integrate_veloc(t0, tf, delta_veloc):
+#     return map(lambda a: (0.5)*a*(tf**2-t0**2), delta_veloc)
 
+# test script
 def main():
     launch_coord = (38.663484, -90.365707)
     current_coord = (38.663568, -90.366002)
