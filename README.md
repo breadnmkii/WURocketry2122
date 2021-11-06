@@ -5,6 +5,7 @@ WU Rocketry 21-22 Payload Repository
 
 Setup:
 '''
+
     sudo apt-get update
 
     sudo apt-get upgrade
@@ -12,10 +13,12 @@ Setup:
     sudo apt-get install python3-pip
 
     sudo pip3 install --upgrade setuptools
+    
 '''
 
 Library Dependencies:
 '''
+
     pip install Pillow
 
     pip install Adafruit-Blinka
@@ -23,4 +26,5 @@ Library Dependencies:
     pip install adafruit-circuitpython-gps
 
     pip install adafruit-circuitpython-bno055
+    
 '''
