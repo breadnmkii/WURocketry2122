@@ -1,5 +1,6 @@
 # Main file for tracking program
 import time
+import math
 import board
 import busio
 
