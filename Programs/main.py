@@ -1,6 +1,5 @@
 # Main file for tracking program
 import time
-import math
 import board
 import busio
 
@@ -59,8 +58,8 @@ def main():
             acc = imu.acceleration
             # heading, roll, pitch = imu.read_euler()  # Some other library provides this orientation?
             # print(f'Heading:{heading}   Roll:{roll}   Pitch{pitch}\n')
-            current_acceleration = [0. if (acc[0] is None or math.abs(acc[0]) < acc_lowFilter) else acc[0], 
-                                    0. if (acc[1] is None or math.abs(acc[1]) < acc_lowFilter) else acc[1]]
+            current_acceleration = [0. if (acc[0] is None or abs(acc[0]) < acc_lowFilter) else acc[0], 
+                                    0. if (acc[1] is None or abs(acc[1]) < acc_lowFilter) else acc[1]]
 
             print(f'Current acceleration:{current_acceleration}\n')
             temp_vel = position.integrate_laccel(sample_intv, current_acceleration)
