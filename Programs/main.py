@@ -18,7 +18,8 @@ gps.send_command(b"PMTK220,1000")
 
 # IMU Config
 imu = adafruit_bno055.BNO055_I2C(i2c)
-acc_lowFilter = 0.8
+acc_lowFilter = 0.01
+#vel_lowFilter = 0.005
 
 # Initial GPS acquisition routine
 print("Waiting for GPS fix...")
@@ -37,14 +38,14 @@ def main():
     expected_grid = (0,0)
     
     current_acceleration = [0,0]
-    current_velocity = [0,0]
+    #current_velocity = [0,0]
     launch_displacement = [0,0]
     last_sample = time.monotonic()
     
     while True:
         # Delta timing
         this_sample = time.monotonic()
-        sample_intv = 1.0
+        sample_intv = 0.016
         if this_sample - last_sample >= sample_intv:
             
             ## Sample devices ##
@@ -55,20 +56,19 @@ def main():
             print(f'Current coordinates: {current_coord}\n')
             
             # IMU
-            acc = imu.acceleration
+            acc = imu.linear_acceleration
             # heading, roll, pitch = imu.read_euler()  # Some other library provides this orientation?
             # print(f'Heading:{heading}   Roll:{roll}   Pitch{pitch}\n')
             current_acceleration = [0. if (acc[0] is None or abs(acc[0]) < acc_lowFilter) else acc[0], 
                                     0. if (acc[1] is None or abs(acc[1]) < acc_lowFilter) else acc[1]]
 
             print(f'Current acceleration:{current_acceleration}\n')
-            temp_vel = position.integrate_laccel(sample_intv, current_acceleration)
-
-            current_velocity[0] = current_velocity[0] + temp_vel[0]
-            current_velocity[1] = current_velocity[1] + temp_vel[1]
-            print(f'Current velocity:    {tuple(current_velocity)}\n')
-            launch_displacement = position.update_disp(launch_displacement,
-                                                       current_velocity)
+            #current_velocity[0] = current_velocity[0] + temp_vel[0]
+            #current_velocity[1] = current_velocity[1] + temp_vel[1]
+            #print(f'Current velocity:    {tuple(current_velocity)}\n')
+            temp_displacement = position.integrate_laccel(sample_intv, current_acceleration)
+            launch_displacement[0] += temp_displacement[0]
+            launch_displacement[1] += temp_displacement[1]
             print(f'Launch displacement: {tuple(launch_displacement)}\n')
 
 
