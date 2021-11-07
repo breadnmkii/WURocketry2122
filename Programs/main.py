@@ -20,10 +20,10 @@ imu = adafruit_bno055.BNO055_I2C(i2c)
 
 # Initial GPS acquisition routine
 print("Waiting for GPS fix...")
-while not gps.has_fix:
-    gps.update()
-LAUNCH_COORD = (gps.latitude, gps.longitude)
-#LAUNCH_COORD = (38.663484, -90.365707)
+#while not gps.has_fix:
+#    gps.update()
+#LAUNCH_COORD = (gps.latitude, gps.longitude)
+LAUNCH_COORD = (38.663484, -90.365707)
 print(f"Obtained launch coordinates: {LAUNCH_COORD}")
 
 
@@ -34,15 +34,15 @@ def main():
     current_grid = (0,0)
     expected_grid = (0,0)
     
-    current_acceleration = (0,0)
-    current_velocity = (0,0)
-    launch_displacement = (0,0)
+    current_acceleration = [0,0]
+    current_velocity = [0,0]
+    launch_displacement = [0,0]
     last_sample = time.monotonic()
     
     while True:
         # Delta timing
         this_sample = time.monotonic()
-        if this_sample - last_sample >= 1.0:
+        if this_sample - last_sample >= 0.01:
             
             ## Sample devices ##
             print('\n')
@@ -54,13 +54,15 @@ def main():
             # IMU
             acc = imu.acceleration
             # heading, roll, pitch = imu.read_euler()  # Some other library provides this orientation?
-            print(f'Heading:{heading}   Roll:{roll}   Pitch{pitch}\n')
-            current_acceleration = (0. if acc[0] is None else acc[0], 
-                                    0. if acc[1] is None else acc[1])
+            # print(f'Heading:{heading}   Roll:{roll}   Pitch{pitch}\n')
+            current_acceleration = [0. if (acc[0] is None or acc[0] < 1.) else acc[0], 
+                                    0. if (acc[1] is None or acc[1] < 1.) else acc[1]]
+
             print(f'Current acceleration:{current_acceleration}\n')
-            current_velocity += position.integrate_laccel(last_sample, 
-                                                          this_sample, 
-                                                          current_acceleration)
+            temp_vel = position.integrate_laccel(last_sample, this_sample, current_acceleration)
+
+            current_velocity[0] = current_velocity[0] + temp_vel[0]
+            current_velocity[1] = current_velocity[1] + temp_vel[1]
             print(f'Current velocity:    {tuple(current_velocity)}\n')
             launch_displacement = position.update_disp(launch_displacement,
                                                        current_velocity)

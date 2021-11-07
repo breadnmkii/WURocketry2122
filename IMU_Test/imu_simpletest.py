@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: MIT
 
 import time
+import math
 import board
 import adafruit_bno055
 
@@ -35,12 +36,14 @@ while True:
     )  # Uncomment if using a Raspberry Pi
     """
     print("Accelerometer (m/s^2): {}".format(sensor.acceleration))
-    print("Magnetometer (microteslas): {}".format(sensor.magnetic))
-    print("Gyroscope (rad/sec): {}".format(sensor.gyro))
-    print("Euler angle: {}".format(sensor.euler))
-    print("Quaternion: {}".format(sensor.quaternion))
-    print("Linear acceleration (m/s^2): {}".format(sensor.linear_acceleration))
-    print("Gravity (m/s^2): {}".format(sensor.gravity))
+    #print("Magnetometer (microteslas): {}".format(sensor.magnetic))
+    heading = math.atan2(sensor.magnetic[0], sensor.magnetic[1])
+    print("Heading (radians): {}".format(heading))
+    #print("Gyroscope (rad/sec): {}".format(sensor.gyro))
+    #print("Euler angle: {}".format(sensor.euler))
+    #print("Quaternion: {}".format(sensor.quaternion))
+    #print("Linear acceleration (m/s^2): {}".format(sensor.linear_acceleration))
+    #print("Gravity (m/s^2): {}".format(sensor.gravity))
     print()
 
     time.sleep(1)
