@@ -26,12 +26,12 @@ LON_DEGREE          = 288200    # (feet)
 
 ## Function to convert coordinates from launch into launch distance
 def coord_to_dist(launch_coord, current_coord):
-    coord_correction = (Decimal(f'{launch_coord[0]}') - Decimal(f'{IDEAL_COORD[0]}'), 
-                        Decimal(f'{launch_coord[1]}') - Decimal(f'{IDEAL_COORD[1]}'))
+    # coord_correction = (Decimal(f'{launch_coord[0]}') - Decimal(f'{IDEAL_COORD[0]}'), 
+    #                     Decimal(f'{launch_coord[1]}') - Decimal(f'{IDEAL_COORD[1]}'))
 
     return coord_to_feet((
-        Decimal(f'{current_coord[0]}') - Decimal(f'{launch_coord[0]}') + coord_correction[0],
-        Decimal(f'{current_coord[1]}') - Decimal(f'{launch_coord[1]}') + coord_correction[1]))
+        Decimal(f'{current_coord[0]}') - Decimal(f'{IDEAL_COORD[0]}'), # + coord_correction[0],
+        Decimal(f'{current_coord[1]}') - Decimal(f'{IDEAL_COORD[1]}')))  #+ coord_correction[1]))
 
 def coord_to_feet(coord):
     return ((Decimal(f'{coord[0]}')*Decimal(f'{LAT_DEGREE}')),
