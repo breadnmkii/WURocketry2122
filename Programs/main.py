@@ -53,7 +53,7 @@ def main():
             
             # IMU
             acc = imu.acceleration
-            heading, roll, pitch = imu.read_euler()
+            # heading, roll, pitch = imu.read_euler()  # Some other library provides this orientation?
             print(f'Heading:{heading}   Roll:{roll}   Pitch{pitch}\n')
             current_acceleration = (0. if acc[0] is None else acc[0], 
                                     0. if acc[1] is None else acc[1])
