@@ -53,12 +53,14 @@ def main():
             
             # IMU
             acc = imu.acceleration
+            heading, roll, pitch = imu.read_euler()
+            print(f'Heading:{heading}   Roll:{roll}   Pitch{pitch}\n')
             current_acceleration = (0. if acc[0] is None else acc[0], 
                                     0. if acc[1] is None else acc[1])
             print(f'Current acceleration:{current_acceleration}\n')
-            current_velocity = position.integrate_laccel(last_sample, 
-                                                         this_sample, 
-                                                         current_acceleration)
+            current_velocity += position.integrate_laccel(last_sample, 
+                                                          this_sample, 
+                                                          current_acceleration)
             print(f'Current velocity:    {tuple(current_velocity)}\n')
             launch_displacement = position.update_disp(launch_displacement,
                                                        current_velocity)
