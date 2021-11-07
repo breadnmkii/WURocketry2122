@@ -18,9 +18,10 @@ Library Dependencies:
 
     pip install Pillow
 
-    pip install Adafruit-Blinka
+    pip3 install Adafruit-Blinka
 
-    pip install adafruit-circuitpython-gps
+    pip3 install adafruit-circuitpython-gps
 
-    pip install adafruit-circuitpython-bno055
+    pip3 install adafruit-circuitpython-bno055
     
+    pip3 install adafruit-circuitpython-rfm9x
