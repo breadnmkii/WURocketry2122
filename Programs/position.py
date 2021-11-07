@@ -53,8 +53,8 @@ def dist_to_grid(launch_disp):
 # Step 1. 1-D velocity
 # Step 2. 2-d velocity + change in orientation
 # Step 3. enjoy dealing with 3d space
-def integrate_laccel(t0, tf, delta_laccel):
-    return tuple(map(lambda a: a*(tf-t0), delta_laccel))
+def integrate_laccel(time_intv, delta_laccel):
+    return tuple(map(lambda a: a*time_intv, delta_laccel))
 
 # Maps a lambda function to add current displacement vector with current velocity vector
 def update_disp(current_disp, current_vel):

@@ -15,8 +15,10 @@ i2c = board.I2C()
 gps = adafruit_gps.GPS_GtopI2C(i2c, debug=False)
 gps.send_command(b"PMTK314,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0")
 gps.send_command(b"PMTK220,1000")
+
 # IMU Config
 imu = adafruit_bno055.BNO055_I2C(i2c)
+acc_lowFilter = 0.8
 
 # Initial GPS acquisition routine
 print("Waiting for GPS fix...")
@@ -42,7 +44,8 @@ def main():
     while True:
         # Delta timing
         this_sample = time.monotonic()
-        if this_sample - last_sample >= 0.01:
+        sample_intv = 1.0
+        if this_sample - last_sample >= sample_intv:
             
             ## Sample devices ##
             print('\n')
@@ -55,11 +58,11 @@ def main():
             acc = imu.acceleration
             # heading, roll, pitch = imu.read_euler()  # Some other library provides this orientation?
             # print(f'Heading:{heading}   Roll:{roll}   Pitch{pitch}\n')
-            current_acceleration = [0. if (acc[0] is None or acc[0] < 1.) else acc[0], 
-                                    0. if (acc[1] is None or acc[1] < 1.) else acc[1]]
+            current_acceleration = [0. if (acc[0] is None or math.abs(acc[0]) < acc_lowFilter) else acc[0], 
+                                    0. if (acc[1] is None or math.abs(acc[1]) < acc_lowFilter) else acc[1]]
 
             print(f'Current acceleration:{current_acceleration}\n')
-            temp_vel = position.integrate_laccel(last_sample, this_sample, current_acceleration)
+            temp_vel = position.integrate_laccel(sample_intv, current_acceleration)
 
             current_velocity[0] = current_velocity[0] + temp_vel[0]
             current_velocity[1] = current_velocity[1] + temp_vel[1]
