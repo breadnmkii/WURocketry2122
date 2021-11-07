@@ -9,6 +9,7 @@
 #       5. Assuming our launchpad @ (0,0), convert our distances to grid based on grid length (76.2 m)
 # Latitude: N (+), S (-)    Longitude: E (+), W(-)
 # Latitude = y-axis         Longitude = x-axis
+# So coordinates in form of (y,x)
 import math
 from decimal import *
 
@@ -36,13 +37,12 @@ def coord_to_feet(coord):
     return ((Decimal(f'{coord[0]}')*Decimal(f'{LAT_DEGREE}')),
             (Decimal(f'{coord[1]}')*Decimal(f'{LON_DEGREE}')))
 
-## Function to map launch distance to a grid number
-# Since we know the image center will be at exactly half of 5000ft (2500,2500 ft), we can calculate distance from TOP-LEFT (0,0) 
-# by simply adding 2500ft to each axis of measurement. Then divide by grid length (250ft) and obtain ceiling to determine grid
-# we are in
+## Function to map launch distance to a grid number     NOTE: Center (0,0), -> is +x,  ^ is +y
+# Assuming origin grid (0,0) is at center of map, then divide displacement vector components by grid length (250ft) and 
+# apply ceiling to determine number of grids along x and y axis we are in
 def dist_to_grid(launch_disp):
-    x_grid = math.ceil((launch_disp[1]+2500)/250)
-    y_grid = math.ceil((launch_disp[0]+2500)/250)
+    x_grid = math.ceil((launch_disp[1])/250)
+    y_grid = math.ceil((launch_disp[0])/250)
 
     return (x_grid, y_grid)
     
