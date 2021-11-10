@@ -45,7 +45,7 @@ while True:
             if rx_packet is None:
                 print('Did not receive')
             else:
-                rx_data = str(packet, "utf-8")
+                rx_data = str(rx_packet, "utf-8")
                 print(f'Received {rx_data}')
                 time.sleep(1)
         
