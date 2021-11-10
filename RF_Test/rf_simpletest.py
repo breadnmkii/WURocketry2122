@@ -31,7 +31,7 @@ CS = DigitalInOut(board.CE1)
 RESET = DigitalInOut(board.D25)
 spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
 
-while True
+while True:
     # Attempt setting up RFM9x Module
     try:
         rfm9x = adafruit_rfm9x.RFM9x(spi, CS, RESET, 915.0)
