@@ -368,8 +368,6 @@ def run():
     # EKF step
     a_nav, orix, oriy, oriz = tracker.attitudeTrack(data[30:], init_list)
 
-    print(orix)
-
     # Acceleration correction step
     a_nav_filtered = tracker.removeAccErr(a_nav, filter=False)
     # plot3([a_nav, a_nav_filtered])

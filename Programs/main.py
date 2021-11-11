@@ -33,7 +33,7 @@ print(f"Obtained launch coordinates: {LAUNCH_COORD}")
 # Main payload routine
 def main():
     # Two dimensional vectors
-    current_coord = LAUNCH_COORD
+    current_coord = LAUNCH_COORD    # TODO: let current_coord be GPS coord
     current_grid = (0,0)
     expected_grid = (0,0)
     
@@ -77,8 +77,6 @@ def main():
 
             ## Simple test routines ##
             # Test GPS coordinates to grid number
-            launch_displacement[0] = 260
-            launch_displacement[1] = -260
             current_grid = position.dist_to_grid(launch_displacement)
         
             expected_grid = position.dist_to_grid(position.coord_to_dist(LAUNCH_COORD, current_coord))
