@@ -10,7 +10,7 @@
 
 import numpy as np
 from numpy.linalg import inv, norm
-import mathlib as mt
+from mathlib import *
 
 import time
 import math
@@ -71,7 +71,7 @@ class IMUTracker:
         # ---- magnetic field ----
         mn = m.mean(axis=0)
         # magnitude is not important
-        mn = mt.normalized(mn)[:, np.newaxis]
+        mn = normalized(mn)[:, np.newaxis]
 
         # ---- compute noise covariance ----
         avar = a.var(axis=0)
@@ -135,7 +135,7 @@ class IMUTracker:
 
             wt = w[t, np.newaxis].T
             at = a[t, np.newaxis].T
-            mt = mt.normalized(m[t, np.newaxis].T)
+            mt = normalized(m[t, np.newaxis].T)
 
             # ------------------------------- #
             # ---- 1. Propagation ----
@@ -145,7 +145,7 @@ class IMUTracker:
             Gt = G(q)
             Q = (gyro_noise * self.dt)**2 * Gt @ Gt.T
 
-            q = mt.normalized(Ft @ q)
+            q = normalized(Ft @ q)
             P = Ft @ P @ Ft.T + Q
 
             # ------------------------------- #
@@ -155,11 +155,11 @@ class IMUTracker:
             # Use normalized measurements to reduce error!
 
             # ---- acc and mag prediction ----
-            pa = mt.normalized(-rotate(q) @ gn)
-            pm = mt.normalized(rotate(q) @ mn)
+            pa = normalized(-rotate(q) @ gn)
+            pm = normalized(rotate(q) @ mn)
 
             # ---- residual ----
-            Eps = np.vstack((mt.normalized(at), mt)) - np.vstack((pa, pm))
+            Eps = np.vstack((normalized(at), mt)) - np.vstack((pa, pm))
 
             # ---- sensor noise ----
             # R = internal error + external error
@@ -180,7 +180,7 @@ class IMUTracker:
             # ---- 3. Post Correction ----
             # ------------------------------- #
 
-            q = mt.normalized(q)
+            q = normalized(q)
             P = 0.5 * (P + P.T)    # make sure P is symmertical
 
             # ------------------------------- #
@@ -190,10 +190,10 @@ class IMUTracker:
             # ---- navigation frame acceleration ----
             conj = -I(4)
             conj[0, 0] = 1
-            an = mt.rotate(conj @ q) @ at + gn
+            an = rotate(conj @ q) @ at + gn
 
             # ---- navigation frame orientation ----
-            orin = mt.rotate(conj @ q) @ init_ori
+            orin = rotate(conj @ q) @ init_ori
 
             # ---- saving data ----
             a_nav.append(an.T[0])
@@ -248,7 +248,7 @@ class IMUTracker:
             a_nav[t_end + i] -= an_drift
 
         if filter:
-            filtered_a_nav = mt.filtSignal([a_nav], dt=self.dt, wn=wn, btype='bandpass')[0]
+            filtered_a_nav = filtSignal([a_nav], dt=self.dt, wn=wn, btype='bandpass')[0]
             return filtered_a_nav
         else:
             return a_nav
