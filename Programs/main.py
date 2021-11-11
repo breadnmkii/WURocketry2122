@@ -45,7 +45,7 @@ def main():
     while True:
         # Delta timing
         this_sample = time.monotonic()
-        sample_intv = 0.016
+        sample_intv = 0.1
         if this_sample - last_sample >= sample_intv:
             
             ## Sample devices ##
