@@ -11,6 +11,15 @@
 import numpy as np
 from numpy.linalg import inv, norm
 
+import time
+import math
+import board
+import adafruit_bno055
+
+
+i2c = board.I2C()
+sensor = adafruit_bno055.BNO055_I2C(i2c)
+
 
 
 class IMUTracker:
@@ -321,6 +330,21 @@ def receive_data():
 
 
 def run():
+    samples = 100000
+    frequency = 1/100
+    # Collect data in order of WAM 
+    f = open("data.txt", "w+")
+    last_time = time.monotonic
+
+    while(samples > 0):
+        current_time = time.monotonic
+        if(current_time - last_time >= frequency):
+            last_time = current_time
+            samples -= 1
+            w = sensor.gyro
+            a = sensor.acceleration
+            f.write()
+
     tracker = IMUTracker(sampling=100)
     data = receive_data()    # reads IMU data from file
 

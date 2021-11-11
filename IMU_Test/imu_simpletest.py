@@ -38,6 +38,7 @@ while True:
     print(f"Gyroscope Data:{sensor.gyro}")
     print(f"Accelerometer Data:{sensor.acceleration}")
     print(f"Magnetometer Data:{sensor.magnetic}")
+    print(time.monotonic)
     #print("Accelerometer (m/s^2): {}".format(sensor.acceleration))
     #print("Magnetometer (microteslas): {}".format(sensor.magnetic))
     #print("Gyroscope (rad/sec): {}".format(sensor.gyro))
