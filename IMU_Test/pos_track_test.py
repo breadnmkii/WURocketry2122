@@ -330,12 +330,13 @@ def receive_data():
 
 
 def run():
-    samples = 100000
-    frequency = 1/100
+
     # Collect data in order of WAM 
     f = open("data.txt", "w+")
     last_time = time.monotonic()
-
+    samples = 100000
+    frequency = 1/100
+    print(f"Collecting {samples} samples...")
     while(samples > 0):
         current_time = time.monotonic()
         if(current_time - last_time >= frequency):
@@ -343,7 +344,12 @@ def run():
             samples -= 1
             w = sensor.gyro
             a = sensor.acceleration
-            f.write()
+            m = sensor.magnetic
+            f.write(f'{w[0]},{w[1]},{w[2]}\n')
+            f.write(f'{a[0]},{a[1]},{a[2]}\n')
+            f.write(f'{m[0]},{m[1]},{m[2]}\n')
+    f.close()
+    print("Finished collection")
 
     tracker = IMUTracker(sampling=100)
     data = receive_data()    # reads IMU data from file
@@ -367,6 +373,10 @@ def run():
 
     # Integration Step
     p = tracker.positionTrack(a_nav_filtered, v)
+
+    f = open("pos.txt", "w")
+    f.write(p)
+    f.close()
 
 
 if __name__ == '__main__':
