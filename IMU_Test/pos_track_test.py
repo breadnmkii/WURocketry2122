@@ -314,6 +314,7 @@ class IMUTracker:
             vt = velocities[t, np.newaxis].T
 
             p = p + vt * self.dt + 0.5 * at * self.dt**2
+            print(p)
             positions.append(p.T[0])
             t += 1
 
