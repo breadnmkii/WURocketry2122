@@ -29,16 +29,17 @@ def temperature():
 
 
 while True:
-    print("Temperature: {} degrees C".format(sensor.temperature))
-    """
-    print(
-        "Temperature: {} degrees C".format(temperature())
-    )  # Uncomment if using a Raspberry Pi
-    """
-    print("Accelerometer (m/s^2): {}".format(sensor.acceleration))
+    # print("Temperature: {} degrees C".format(sensor.temperature))
+    # """
+    # print(
+    #     "Temperature: {} degrees C".format(temperature())
+    # )  # Uncomment if using a Raspberry Pi
+    # """
+    print(f"Gyroscope Data:{sensor.gyro}")
+    print(f"Accelerometer Data:{sensor.acceleration}")
+    print(f"Magnetometer Data:{sensor.magnetic}")
+    #print("Accelerometer (m/s^2): {}".format(sensor.acceleration))
     #print("Magnetometer (microteslas): {}".format(sensor.magnetic))
-    heading = math.atan2(sensor.magnetic[0], sensor.magnetic[1])
-    print("Heading (radians): {}".format(heading))
     #print("Gyroscope (rad/sec): {}".format(sensor.gyro))
     #print("Euler angle: {}".format(sensor.euler))
     #print("Quaternion: {}".format(sensor.quaternion))
