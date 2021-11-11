@@ -350,8 +350,8 @@ def run():
                 continue
 
             samples -= 1
-            f.write(f'{w[0]},{w[1]},{w[2]}')
-            f.write(f'{a[0]},{a[1]},{a[2]}')
+            f.write(f'{w[0]},{w[1]},{w[2]},')
+            f.write(f'{a[0]},{a[1]},{a[2]},')
             f.write(f'{m[0]},{m[1]},{m[2]}\n')
     f.close()
     print("Finished collection")
