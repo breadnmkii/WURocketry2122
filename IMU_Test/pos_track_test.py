@@ -334,10 +334,10 @@ def run():
     frequency = 1/100
     # Collect data in order of WAM 
     f = open("data.txt", "w+")
-    last_time = time.monotonic
+    last_time = time.monotonic()
 
     while(samples > 0):
-        current_time = time.monotonic
+        current_time = time.monotonic()
         if(current_time - last_time >= frequency):
             last_time = current_time
             samples -= 1
