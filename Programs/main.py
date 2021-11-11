@@ -77,7 +77,9 @@ def main():
 
             ## Simple test routines ##
             # Test GPS coordinates to grid number
+            launch_displacement[0] = 260
             current_grid = position.dist_to_grid(launch_displacement)
+        
             expected_grid = position.dist_to_grid(position.coord_to_dist(LAUNCH_COORD, current_coord))
             print(f'Guess grid: {current_grid}\n')
             print(f'Actual grid:{expected_grid}\n')
