@@ -379,11 +379,11 @@ def run():
     # Integration Step
     p = tracker.positionTrack(a_nav_filtered, v)
 
-    print(p)
 
-    # f = open("pos.txt", "w")
-    # f.write(p)
-    # f.close()
+    f = open("pos.txt", "w")
+    for item in p:
+        f.write(item.toString()+'\n')
+    f.close()
 
 
 if __name__ == '__main__':
