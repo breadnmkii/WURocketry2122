@@ -325,9 +325,8 @@ def receive_data():
     data = []
     file = open('data.txt', 'r')
     for line in file.readlines():
-        print("Line read:" + line)
         data.append(line.split(','))
-    data = np.array(data, dtype=np.float)
+    data = np.array(data)
     return data
 
 
