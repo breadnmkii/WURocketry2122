@@ -333,28 +333,28 @@ def receive_data():
 def run():
 
     # Collect data in order of WAM 
-    f = open("data.txt", "w+")
-    last_time = time.monotonic()
-    samples = 1000
-    frequency = 1/100
-    print(f"Collecting {samples} samples...")
-    while(samples > 0):
-        current_time = time.monotonic()
-        if(current_time - last_time >= frequency):
-            last_time = current_time
-            w = sensor.gyro
-            a = sensor.acceleration
-            m = sensor.magnetic
+    # f = open("data.txt", "w+")
+    # last_time = time.monotonic()
+    # samples = 1000
+    # frequency = 1/100
+    # print(f"Collecting {samples} samples...")
+    # while(samples > 0):
+    #     current_time = time.monotonic()
+    #     if(current_time - last_time >= frequency):
+    #         last_time = current_time
+    #         w = sensor.gyro
+    #         a = sensor.acceleration
+    #         m = sensor.magnetic
 
-            if(w[0] is None or a[0] is None or m[0] is None):
-                continue
+    #         if(w[0] is None or a[0] is None or m[0] is None):
+    #             continue
 
-            samples -= 1
-            f.write(f'{w[0]},{w[1]},{w[2]},')
-            f.write(f'{a[0]},{a[1]},{a[2]},')
-            f.write(f'{m[0]},{m[1]},{m[2]}\n')
-    f.close()
-    print("Finished collection")
+    #         samples -= 1
+    #         f.write(f'{w[0]},{w[1]},{w[2]},')
+    #         f.write(f'{a[0]},{a[1]},{a[2]},')
+    #         f.write(f'{m[0]},{m[1]},{m[2]}\n')
+    # f.close()
+    # print("Finished collection")
 
     tracker = IMUTracker(sampling=100)
     data = receive_data()    # reads IMU data from file
@@ -379,9 +379,11 @@ def run():
     # Integration Step
     p = tracker.positionTrack(a_nav_filtered, v)
 
-    f = open("pos.txt", "w")
-    f.write(p)
-    f.close()
+    print(p)
+
+    # f = open("pos.txt", "w")
+    # f.write(p)
+    # f.close()
 
 
 if __name__ == '__main__':
