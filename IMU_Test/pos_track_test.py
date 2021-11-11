@@ -382,7 +382,7 @@ def run():
 
     f = open("pos.txt", "w")
     for item in p:
-        f.write(np.array2string(item))
+        f.write(np.array2string(item)+'\n')
     f.close()
 
 
