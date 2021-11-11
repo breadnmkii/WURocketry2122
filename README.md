@@ -26,4 +26,5 @@ Library Dependencies:
     
     pip3 install adafruit-circuitpython-rfm9x
     
-    pip3 install scikit-kinematics
+    pip install git+https://github.com/thomas-haslwanter/easygui
+    pip install scikit-kinematics
