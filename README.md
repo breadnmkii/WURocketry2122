@@ -13,6 +13,8 @@ Setup:
 
     sudo pip3 install --upgrade setuptools
     
+    sudo apt-get install libatlas-base-dev
+    
 
 Library Dependencies:
 
@@ -25,6 +27,3 @@ Library Dependencies:
     pip3 install adafruit-circuitpython-bno055
     
     pip3 install adafruit-circuitpython-rfm9x
-    
-    pip install git+https://github.com/thomas-haslwanter/easygui
-    pip install scikit-kinematics
