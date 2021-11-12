@@ -17,6 +17,8 @@ from decimal import *
 # Configuration & Constants
 getcontext().prec = 7
 
+## OFFICIAL NASA COORDINATES: (34.895444, -86.617000)  some farm in alabama
+
 IDEAL_COORD = (Decimal('38.663484'),Decimal('-90.365707'))  # The expected (lat,lon) coords, obtainted from our imager.py image
 EARTH_CIRCUMFERENCE = 24901     # (miles)
 LAT_DEGREE          = 364000    # (feet)
