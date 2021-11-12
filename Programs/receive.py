@@ -30,7 +30,8 @@ while True:
             else:
                 count += 1
                 rx_data = str(rx_packet, "utf-8")
-                file.write(rx_data)
+                if rx_data != None:
+                    file.write(rx_data)
                 f = open("receiving.txt", "r")
                 print(f.read())
                 time.sleep(1)
