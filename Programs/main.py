@@ -1,13 +1,17 @@
 # Main file for tracking program
 import time
+from typing import final
 import board
 import busio
 
-# External file imports
-import position
-
+# Adafruit libraries
 import adafruit_gps
 import adafruit_bno055
+
+# External file imports
+import position as pos        # IMU tracking
+import grid             # Gridding
+
 
 i2c = board.I2C()
 
@@ -18,15 +22,15 @@ gps.send_command(b"PMTK220,1000")
 
 # IMU Config
 imu = adafruit_bno055.BNO055_I2C(i2c)
-acc_lowFilter = 0.01
-#vel_lowFilter = 0.005
 
 # Initial GPS acquisition routine
 print("Waiting for GPS fix...")
-#while not gps.has_fix:
-#    gps.update()
-#LAUNCH_COORD = (gps.latitude, gps.longitude)
-LAUNCH_COORD = (38.663484, -90.365707)
+while not gps.has_fix:
+   gps.update()
+LAUNCH_COORD = (gps.latitude, gps.longitude)
+
+# LAUNCH_COORD = (38.663484, -90.365707)    # Debug test coordinate
+
 print(f"Obtained launch coordinates: {LAUNCH_COORD}")
 
 
@@ -37,6 +41,9 @@ def main():
     current_grid = (0,0)
     expected_grid = (0,0)
     
+
+    ### Real Time Position Tracking Process ###  (Discontinued for now)
+    '''
     current_acceleration = [0,0]
     #current_velocity = [0,0]
     launch_displacement = [0,0]
@@ -84,6 +91,82 @@ def main():
             print(f'Actual grid:{expected_grid}\n')
             
             last_sample = this_sample
+    '''
+
+    ### Post-Process Position Tracking ###
+    last_sample = time.monotonic()
+    frequency = 1/100
+
+    hasLaunched = False         # Boolean that indicates initial rapid acceleration was detected (launched)
+    hasLanded   = False         # Boolean that indicates no acceleration IF hasLaunched is true  (landed)
+
+    acc_accumulator = []        # List containing all acceleration values to apply a rolling mean
+    window = 50
+    movement_threshold = 1      # Amount of 3-axis acceleration needed to be read to trigger "movement" detection
+
+    # Loop continously checks whether rocket has launched
+    while(not hasLaunched):
+        this_sample = time.monotonic()
+        if(last_sample - this_sample >= frequency):
+            last_sample = this_sample
+            acc_accumulator.append(sum(imu.linear_acceleration))
+        
+        # Take average of latest 'window' elements of 'acc_accumulator' and check if above movement_threshold
+        if(sum(acc_accumulator[-window:])/window > movement_threshold):
+            print("Launch detected!")
+            hasLaunched = True
+
+    acc_accumulator = []
+    f = open("data.txt", "w+")
+    # Loop continuously gathers IMU data between hasLaunched and hasLanded
+    while(not hasLanded):
+        this_sample = time.monotonic()
+        if(last_sample - this_sample >= frequency):
+            last_sample = this_sample
+            acc_accumulator.append(sum(imu.linear_acceleration))
+
+            w = imu.gyro
+            a = imu.acceleration
+            m = imu.magnetic            # NOTE WE CANNOT USE MAG IN REAL LAUNCH
+
+            if(w[0] is None or a[0] is None or m[0] is None):
+                continue
+
+            f.write(f'{w[0]},{w[1]},{w[2]},')
+            f.write(f'{a[0]},{a[1]},{a[2]},')
+            f.write(f'{m[0]},{m[1]},{m[2]}\n')
+
+        # Check for no more movement (below movement_threshold)
+        if(sum(acc_accumulator[-window:])/window < movement_threshold):
+            print("Landing detected!")
+            hasLanded = True
+    
+    ## Process position data
+    # EKF step
+    tracker = pos.IMUTracker(sampling=100)
+    data = pos.receive_data()    # reads IMU data from file
+
+    a_nav, orix, oriy, oriz = tracker.attitudeTrack(data[30:], pos.init_list)
+
+    # Acceleration correction step
+    a_nav_filtered = tracker.removeAccErr(a_nav, filter=False)
+    # plot3([a_nav, a_nav_filtered])
+
+    # ZUPT step
+    v = tracker.zupt(a_nav_filtered, threshold=0.2)
+    # plot3([v])
+
+    # Integration Step
+    position_data = tracker.positionTrack(a_nav_filtered, v)
+    
+    ## Calculate grid number
+     # Grab last displacement value's (x,y) from position data
+    final_position = (position_data[-1][0], position_data[-1][1]) 
+    grid_num = grid.dist_to_grid(final_position)
+
+    ## Send data 
+    
+
 
 if __name__ == '__main__':
     main()
