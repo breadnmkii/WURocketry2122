@@ -11,7 +11,7 @@ CS = DigitalInOut(board.CE1)
 RESET = DigitalInOut(board.D25)
 spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
 
-file = open("receiving.txt", "a")
+file = open("receiving.txt", "w+")
 
 while True:
     # Attempt setting up RFM9x Module
@@ -22,17 +22,21 @@ while True:
         
         while True:
         
+            count = 1
             # RX
             rx_packet = rfm9x.receive()
             if rx_packet is None:
                 print('Did not receive')
             else:
+                count += 1
                 rx_data = str(rx_packet, "utf-8")
                 file.write(rx_data)
                 f = open("receiving.txt", "r")
                 print(f.read())
                 time.sleep(1)
-    
+                
+            if count==1000:
+                file.close
     
     except RuntimeError as error:
         print('Error in setting up RFM9x... check wiring.')
