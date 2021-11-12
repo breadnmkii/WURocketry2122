@@ -3,13 +3,15 @@ import time
 from typing import final
 import board
 import busio
+from digitalio import DigitalInOut
 
 # Adafruit libraries
 import adafruit_gps
 import adafruit_bno055
+import adafruit_rfm9x
 
 # External file imports
-import position as pos        # IMU tracking
+import position as pos  # IMU tracking
 import grid             # Gridding
 
 
@@ -22,6 +24,11 @@ gps.send_command(b"PMTK220,1000")
 
 # IMU Config
 imu = adafruit_bno055.BNO055_I2C(i2c)
+
+# RF Config
+CS = DigitalInOut(board.CE1)
+RESET = DigitalInOut(board.D25)
+spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
 
 # Initial GPS acquisition routine
 print("Waiting for GPS fix...")
@@ -160,12 +167,26 @@ def main():
     position_data = tracker.positionTrack(a_nav_filtered, v)
     
     ## Calculate grid number
-     # Grab last displacement value's (x,y) from position data
+    # Grab last displacement value's (x,y) from position data
     final_position = (position_data[-1][0], position_data[-1][1]) 
     grid_num = grid.dist_to_grid(final_position)
+    str_grid = f'{grid_num[0]},{grid_num[1]}\r\n'
 
     ## Send data 
-    
+    while True:
+        # Attempt setting up RFM9x Module
+        try:
+            rfm9x = adafruit_rfm9x.RFM9x(spi, CS, RESET, 915.0)
+            rfm9x.tx_power = 23
+            print('RFM9x successfully set up!')
+            
+            while True:
+                # TX
+                tx_data = bytes(str_grid, 'utf-8')
+                rfm9x.send(tx_data)
+
+        except RuntimeError as error:
+            print('Error in setting up RFM9x... check wiring.')
 
 
 if __name__ == '__main__':
