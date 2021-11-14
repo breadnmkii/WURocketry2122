@@ -1,6 +1,5 @@
 # Main file for tracking program
 import time
-from typing import final
 import board
 import busio
 from digitalio import DigitalInOut
@@ -24,6 +23,7 @@ gps.send_command(b"PMTK220,1000")
 
 # IMU Config
 imu = adafruit_bno055.BNO055_I2C(i2c)
+# imu.mode = adafruit_bno055.IMUPLUS_MODE
 
 # RF Config
 CS = DigitalInOut(board.CE1)
@@ -32,11 +32,11 @@ spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
 
 # Initial GPS acquisition routine
 print("Waiting for GPS fix...")
-while not gps.has_fix:
-   gps.update()
-LAUNCH_COORD = (gps.latitude, gps.longitude)
+# while not gps.has_fix:
+#    gps.update()
+# LAUNCH_COORD = (gps.latitude, gps.longitude)
 
-# LAUNCH_COORD = (38.663484, -90.365707)    # Debug test coordinate
+LAUNCH_COORD = (38.663484, -90.365707)    # Debug test coordinate
 
 print(f"Obtained launch coordinates: {LAUNCH_COORD}")
 
@@ -112,6 +112,7 @@ def main():
     movement_threshold = 1      # Amount of 3-axis acceleration needed to be read to trigger "movement" detection
 
     # Loop continously checks whether rocket has launched
+    print("Waiting for launch...")
     while(not hasLaunched):
         this_sample = time.monotonic()
         if(last_sample - this_sample >= frequency):
@@ -119,12 +120,16 @@ def main():
             acc_accumulator.append(sum(imu.linear_acceleration))
         
         # Take average of latest 'window' elements of 'acc_accumulator' and check if above movement_threshold
+        print(sum(acc_accumulator[-window:])/window)
+        print(movement_threshold)
         if(sum(acc_accumulator[-window:])/window > movement_threshold):
             print("Launch detected!")
             hasLaunched = True
 
     acc_accumulator = []
     f = open("data.txt", "w+")
+
+    print("Watiting for landing...")
     # Loop continuously gathers IMU data between hasLaunched and hasLanded
     while(not hasLanded):
         this_sample = time.monotonic()
@@ -144,6 +149,8 @@ def main():
             f.write(f'{m[0]},{m[1]},{m[2]}\n')
 
         # Check for no more movement (below movement_threshold)
+        print(sum(acc_accumulator[-window:])/window)
+        print(movement_threshold)
         if(sum(acc_accumulator[-window:])/window < movement_threshold):
             print("Landing detected!")
             hasLanded = True
@@ -171,6 +178,11 @@ def main():
     final_position = (position_data[-1][0], position_data[-1][1]) 
     grid_num = grid.dist_to_grid(final_position)
     str_grid = f'{grid_num[0]},{grid_num[1]}\r\n'
+    
+    ## Save data
+    f = open("landing.txt", "w+")
+    f.write(str_grid)
+    f.close()
 
     ## Send data 
     while True:
