@@ -147,6 +147,8 @@ def main():
             f.write(f'{m[0]},{m[1]},{m[2]}\n')
 
         # Check for no more movement (below movement_threshold)
+        print(sum(acc_accumulator[-window:])/window)
+        print(movement_threshold)
         if(sum(acc_accumulator[-window:])/window < movement_threshold):
             print("Landing detected!")
             hasLanded = True
