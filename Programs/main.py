@@ -131,6 +131,8 @@ def main():
    
     f = open("data.txt", "w+")
     print("Watiting for landing...")
+    launch_time = time.monotonic()      # Marks time at launch
+    min_imu_time = 30            # Minimum time IMU should collect data (prevents immediate landing event detections)
     # Loop continuously gathers IMU data between hasLaunched and hasLanded
     while(not hasLanded):
         this_sample = time.monotonic()
@@ -152,10 +154,10 @@ def main():
             f.write(f'{a[0]},{a[1]},{a[2]},')
             f.write(f'{m[0]},{m[1]},{m[2]}\n')
 
-        # Check for no more movement (below movement_threshold)
-        if(sum(acc_accumulator[-window:])/window < movement_threshold):
-            print("Landing detected!")
-            hasLanded = True
+            # Check after some duration post launch for no more movement (below movement_threshold)
+            if((this_sample - launch_time >= min_imu_time) and sum(acc_accumulator[-window:])/window < movement_threshold):
+                print("Landing detected!")
+                hasLanded = True
     f.close()
 
     ## Process position data
