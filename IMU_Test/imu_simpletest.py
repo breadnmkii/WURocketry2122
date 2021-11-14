@@ -9,7 +9,7 @@ import adafruit_bno055
 
 i2c = board.I2C()
 sensor = adafruit_bno055.BNO055_I2C(i2c)
-sensor.mode = adafruit_bno055.IMUPLUS_MODE
+# sensor.mode = adafruit_bno055.IMUPLUS_MODE
 
 # If you are going to use UART uncomment these lines
 # uart = board.UART()
