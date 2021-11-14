@@ -33,7 +33,7 @@ frequency_intv = 1/10
 last_sample = time.monotonic()
 while True:
     this_sample = time.monotonic()
-    if(this_sample - last_sample >= frequency_intv) {
+    if(this_sample - last_sample >= frequency_intv):
         print(f"Sample Time:{}")
         print(f"Gyroscope Data:{sensor.gyro}")
         print(f"Accelerometer Data:{sensor.acceleration}")
@@ -46,4 +46,4 @@ while True:
         #print("Linear acceleration (m/s^2): {}".format(sensor.linear_acceleration))
         #print("Gravity (m/s^2): {}".format(sensor.gravity))
         print()
-    }
+    
