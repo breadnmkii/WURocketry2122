@@ -157,6 +157,7 @@ def main():
             # Check after some duration post launch for no more movement (below movement_threshold)
             if((this_sample - launch_time >= min_imu_time) and abs(sum(acc_accumulator[-window:])/window) < movement_threshold):
                 print("Landing detected!")
+                print(f"Launch duration:{this_sample-launch_time}")
                 hasLanded = True
             print(f"AcAcc:{abs(sum(acc_accumulator[-window:])/window)}")
     f.close()
