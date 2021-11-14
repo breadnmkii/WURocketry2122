@@ -58,9 +58,9 @@ class IMUTracker:
 
         # discard the first few readings
         # for some reason they might fluctuate a lot
-        w = data[:, self._widx[0]:self._widx[1]]
-        a = data[:, self._aidx[0]:self._aidx[1]]
-        m = data[:, self._midx[0]:self._midx[1]]
+        # w = data[:, self._widx[0]:self._widx[1]]
+        # a = data[:, self._aidx[0]:self._aidx[1]]
+        # m = data[:, self._midx[0]:self._midx[1]]
 
         # ---- gravity ----
         gn = -a.mean(axis=0)

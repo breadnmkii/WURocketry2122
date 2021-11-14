@@ -163,9 +163,9 @@ def main():
     data = pos.receive_data()    # reads IMU data from file
 
     print('Initializing tracker computation..')
-    init_list = tracker.initialize(data[5:30])
+    init_list = tracker.initialize(data)
 
-    a_nav, orix, oriy, oriz = tracker.attitudeTrack(data[30:], init_list)
+    a_nav, orix, oriy, oriz = tracker.attitudeTrack(data, init_list)
 
     # Acceleration correction step
     a_nav_filtered = tracker.removeAccErr(a_nav, filter=False)
