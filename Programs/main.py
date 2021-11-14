@@ -132,7 +132,7 @@ def main():
     f = open("data.txt", "w+")
     print("Watiting for landing...")
     launch_time = time.monotonic()      # Marks time at launch
-    min_imu_time = 30            # Minimum time IMU should collect data (prevents immediate landing event detections)
+    min_imu_time = 10                   # Minimum time IMU should collect data (prevents immediate landing event detections)
     # Loop continuously gathers IMU data between hasLaunched and hasLanded
     while(not hasLanded):
         this_sample = time.monotonic()
@@ -165,7 +165,7 @@ def main():
     tracker = pos.IMUTracker(sampling=100)
     data = pos.receive_data()    # reads IMU data from file
 
-    print('Initializing tracker computation..')
+    print('Initializing tracker computation...')
     init_list = tracker.initialize(data)
 
     a_nav, orix, oriy, oriz = tracker.attitudeTrack(data, init_list)
@@ -188,11 +188,13 @@ def main():
     str_grid = f'{grid_num[0]},{grid_num[1]}\r\n'
     
     ## Save data
+    print("Saved data to file!")
     f = open("landing.txt", "w+")
     f.write(str_grid)
     f.close()
 
     ## Send data 
+    print("Send signal loop...")
     while True:
         # Attempt setting up RFM9x Module
         try:
