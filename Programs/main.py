@@ -153,8 +153,6 @@ def main():
             f.write(f'{m[0]},{m[1]},{m[2]}\n')
 
         # Check for no more movement (below movement_threshold)
-        print(sum(acc_accumulator[-window:])/window)
-        print(movement_threshold)
         if(sum(acc_accumulator[-window:])/window < movement_threshold):
             print("Landing detected!")
             hasLanded = True
@@ -164,7 +162,10 @@ def main():
     tracker = pos.IMUTracker(sampling=100)
     data = pos.receive_data()    # reads IMU data from file
 
-    a_nav, orix, oriy, oriz = tracker.attitudeTrack(data[30:], pos.init_list)
+    print('Initializing tracker computation..')
+    init_list = tracker.initialize(data[5:])
+
+    a_nav, orix, oriy, oriz = tracker.attitudeTrack(data[30:], init_list)
 
     # Acceleration correction step
     a_nav_filtered = tracker.removeAccErr(a_nav, filter=False)
