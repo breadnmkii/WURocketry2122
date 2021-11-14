@@ -23,7 +23,7 @@ gps.send_command(b"PMTK220,1000")
 
 # IMU Config
 imu = adafruit_bno055.BNO055_I2C(i2c)
-# imu.mode = adafruit_bno055.IMUPLUS_MODE
+imu.mode = adafruit_bno055.IMUPLUS_MODE     # NO MAGNETOMETER MODE
 
 # RF Config
 CS = DigitalInOut(board.CE1)
