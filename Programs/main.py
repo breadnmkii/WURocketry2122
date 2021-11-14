@@ -109,7 +109,7 @@ def main():
 
     acc_accumulator = []        # List containing all acceleration values to apply a rolling mean
     window = 50
-    movement_threshold = 0.5      # Amount of 3-axis acceleration needed to be read to trigger "movement" detection
+    movement_threshold = 0.33      # Amount of 3-axis acceleration needed to be read to trigger "movement" detection
 
     # Loop continously checks whether rocket has launched
     print("Waiting for launch...")
