@@ -24,6 +24,7 @@ gps.send_command(b"PMTK220,1000")
 
 # IMU Config
 imu = adafruit_bno055.BNO055_I2C(i2c)
+imu.accel_mode = 'IMUPLUS_MODE'
 
 # RF Config
 CS = DigitalInOut(board.CE1)
@@ -171,6 +172,9 @@ def main():
     final_position = (position_data[-1][0], position_data[-1][1]) 
     grid_num = grid.dist_to_grid(final_position)
     str_grid = f'{grid_num[0]},{grid_num[1]}\r\n'
+    
+    ## Save data
+    f = open("receiving.txt", "w+")
 
     ## Send data 
     while True:
