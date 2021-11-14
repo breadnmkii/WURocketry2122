@@ -127,7 +127,7 @@ def main():
             print("Launch detected!")
             hasLaunched = True
 
-    acc_accumulator = []
+    acc_accumulator = []                # Accumulates LINEAR acceleration (to determine absolute movement)
    
     f = open("data.txt", "w+")
     print("Watiting for landing...")
@@ -144,7 +144,7 @@ def main():
                 acc_accumulator.append(sum(lin_accel))
 
             w = imu.gyro
-            a = imu.acceleration
+            a = imu.acceleration        # Grab NON-linear acceleration for use in computation
             m = imu.magnetic            # NOTE WE CANNOT USE MAG IN REAL LAUNCH
 
             if(w[0] is None or a[0] is None or m[0] is None):
