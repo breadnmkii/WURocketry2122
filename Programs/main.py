@@ -109,7 +109,7 @@ def main():
 
     acc_accumulator = []        # List containing all acceleration values to apply a rolling mean
     window = 50
-    movement_threshold = 1      # Amount of 3-axis acceleration needed to be read to trigger "movement" detection
+    movement_threshold = 0.5      # Amount of 3-axis acceleration needed to be read to trigger "movement" detection
 
     # Loop continously checks whether rocket has launched
     print("Waiting for launch...")
@@ -128,8 +128,8 @@ def main():
             hasLaunched = True
 
     acc_accumulator = []
+   
     f = open("data.txt", "w+")
-
     print("Watiting for landing...")
     # Loop continuously gathers IMU data between hasLaunched and hasLanded
     while(not hasLanded):
@@ -156,7 +156,8 @@ def main():
         if(sum(acc_accumulator[-window:])/window < movement_threshold):
             print("Landing detected!")
             hasLanded = True
-    
+    f.close()
+
     ## Process position data
     # EKF step
     tracker = pos.IMUTracker(sampling=100)
