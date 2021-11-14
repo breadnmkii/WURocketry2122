@@ -117,7 +117,7 @@ def main():
         this_sample = time.monotonic()
         print(last_sample - this_sample)
         print(f"Freq: {frequency}")
-        if(last_sample - this_sample >= frequency):
+        if(this_sample - last_sample >= frequency):
             last_sample = this_sample
             acc_accumulator.append(sum(imu.linear_acceleration))
             print(f"ASum:{sum(imu.linear_acceleration)}")
