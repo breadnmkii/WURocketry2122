@@ -115,6 +115,8 @@ def main():
     print("Waiting for launch...")
     while(not hasLaunched):
         this_sample = time.monotonic()
+        print(last_sample - this_sample)
+        print(f"Freq: {frequency}")
         if(last_sample - this_sample >= frequency):
             last_sample = this_sample
             acc_accumulator.append(sum(imu.linear_acceleration))
