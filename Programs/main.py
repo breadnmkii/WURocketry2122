@@ -32,11 +32,11 @@ spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
 
 # Initial GPS acquisition routine
 print("Waiting for GPS fix...")
-while not gps.has_fix:
-   gps.update()
-LAUNCH_COORD = (gps.latitude, gps.longitude)
+# while not gps.has_fix:
+#    gps.update()
+# LAUNCH_COORD = (gps.latitude, gps.longitude)
 
-# LAUNCH_COORD = (38.663484, -90.365707)    # Debug test coordinate
+LAUNCH_COORD = (38.663484, -90.365707)    # Debug test coordinate
 
 print(f"Obtained launch coordinates: {LAUNCH_COORD}")
 
