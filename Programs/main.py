@@ -1,6 +1,5 @@
 # Main file for tracking program
 import time
-from typing import final
 import board
 import busio
 from digitalio import DigitalInOut
