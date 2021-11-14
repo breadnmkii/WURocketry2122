@@ -118,10 +118,11 @@ def main():
         if(last_sample - this_sample >= frequency):
             last_sample = this_sample
             acc_accumulator.append(sum(imu.linear_acceleration))
+            print(f"ASum:{sum(imu.linear_acceleration)}")
         
         # Take average of latest 'window' elements of 'acc_accumulator' and check if above movement_threshold
-        print(sum(acc_accumulator[-window:])/window)
-        print(movement_threshold)
+        print(acc_accumulator)
+        
         if(sum(acc_accumulator[-window:])/window > movement_threshold):
             print("Launch detected!")
             hasLaunched = True
