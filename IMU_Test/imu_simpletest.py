@@ -34,8 +34,8 @@ last_sample = time.monotonic()
 while True:
     this_sample = time.monotonic()
     if(this_sample - last_sample >= frequency_intv):
-        last_sample = this_sample
         print(f"Sample Time:{last_sample-this_sample}")
+        last_sample = this_sample
         print(f"Gyroscope Data:{sensor.gyro}")
         print(f"Accelerometer Data:{sensor.acceleration}")
         print(f"Magnetometer Data:{sensor.magnetic}")
