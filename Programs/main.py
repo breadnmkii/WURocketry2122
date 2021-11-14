@@ -163,7 +163,7 @@ def main():
     data = pos.receive_data()    # reads IMU data from file
 
     print('Initializing tracker computation..')
-    init_list = tracker.initialize(data[5:])
+    init_list = tracker.initialize(data[5:30])
 
     a_nav, orix, oriy, oriz = tracker.attitudeTrack(data[30:], init_list)
 
