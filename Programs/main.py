@@ -115,16 +115,14 @@ def main():
     print("Waiting for launch...")
     while(not hasLaunched):
         this_sample = time.monotonic()
-        print(last_sample - this_sample)
-        print(f"Freq: {frequency}")
         if(this_sample - last_sample >= frequency):
             last_sample = this_sample
-            acc_accumulator.append(sum(imu.linear_acceleration))
-            print(f"ASum:{sum(imu.linear_acceleration)}")
+            lin_accel = imu.linear_acceleration
+
+            if(lin_accel[0]):
+                acc_accumulator.append(sum(lin_accel))
         
         # Take average of latest 'window' elements of 'acc_accumulator' and check if above movement_threshold
-        print(acc_accumulator)
-        
         if(sum(acc_accumulator[-window:])/window > movement_threshold):
             print("Launch detected!")
             hasLaunched = True
@@ -136,9 +134,12 @@ def main():
     # Loop continuously gathers IMU data between hasLaunched and hasLanded
     while(not hasLanded):
         this_sample = time.monotonic()
-        if(last_sample - this_sample >= frequency):
+        if(this_sample - last_sample >= frequency):
             last_sample = this_sample
-            acc_accumulator.append(sum(imu.linear_acceleration))
+            lin_accel = imu.linear_acceleration
+
+            if(lin_accel[0]):
+                acc_accumulator.append(sum(lin_accel))
 
             w = imu.gyro
             a = imu.acceleration
