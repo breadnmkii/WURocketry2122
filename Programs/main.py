@@ -123,7 +123,7 @@ def main():
                 acc_accumulator.append(sum(lin_accel))
         
         # Take average of latest 'window' elements of 'acc_accumulator' and check if above movement_threshold
-        if(sum(acc_accumulator[-window:])/window > movement_threshold):
+        if(abs(sum(acc_accumulator[-window:])/window) > movement_threshold):
             print("Launch detected!")
             hasLaunched = True
 
@@ -155,10 +155,10 @@ def main():
             f.write(f'{m[0]},{m[1]},{m[2]}\n')
 
             # Check after some duration post launch for no more movement (below movement_threshold)
-            if((this_sample - launch_time >= min_imu_time) and sum(acc_accumulator[-window:])/window < movement_threshold):
+            if((this_sample - launch_time >= min_imu_time) and abs(sum(acc_accumulator[-window:])/window) < movement_threshold):
                 print("Landing detected!")
                 hasLanded = True
-            print(f"AcAcc:{sum(acc_accumulator[-window:])/window}")
+            print(f"AcAcc:{abs(sum(acc_accumulator[-window:])/window)}")
     f.close()
 
     ## Process position data
