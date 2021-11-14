@@ -112,6 +112,7 @@ def main():
     movement_threshold = 1      # Amount of 3-axis acceleration needed to be read to trigger "movement" detection
 
     # Loop continously checks whether rocket has launched
+    print("Waiting for launch...")
     while(not hasLaunched):
         this_sample = time.monotonic()
         if(last_sample - this_sample >= frequency):
@@ -125,6 +126,8 @@ def main():
 
     acc_accumulator = []
     f = open("data.txt", "w+")
+
+    print("Watiting for landing...")
     # Loop continuously gathers IMU data between hasLaunched and hasLanded
     while(not hasLanded):
         this_sample = time.monotonic()
@@ -173,7 +176,9 @@ def main():
     str_grid = f'{grid_num[0]},{grid_num[1]}\r\n'
     
     ## Save data
-    f = open("receiving.txt", "w+")
+    f = open("landing.txt", "w+")
+    f.write(str_grid)
+    f.close()
 
     ## Send data 
     while True:
