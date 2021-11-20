@@ -101,7 +101,7 @@ def main():
     '''
     
     ### Post-Process Position Tracking ###
-    last_sample = time.monotonic()
+    last_sample = time.time()
     frequency = 1/100           # (in seconds)
 
     hasLaunched = False          # Boolean that indicates initial rapid acceleration was detected (launched)
@@ -116,7 +116,7 @@ def main():
     # Loop continously checks whether rocket has launched
     print("Waiting for launch...")
     while(not hasLaunched):
-        this_sample = time.monotonic()
+        this_sample = time.time()
         if(this_sample - last_sample >= frequency):
             last_sample = this_sample
             lin_accel = imu.linear_acceleration
@@ -133,12 +133,12 @@ def main():
    
     f = open("data.txt", "w+")
     print("Watiting for landing...")
-    launch_time = time.monotonic()      # Marks time at launch
+    launch_time = time.time()      # Marks time at launch
     last_sample = launch_time           # Reset delta timing
     min_imu_time = 0.5                   # Minimum time IMU should collect data (prevents immediate landing event detections)
     # Loop continuously gathers IMU data between hasLaunched and hasLanded
     while(not hasLanded):
-        this_sample = time.monotonic()
+        this_sample = time.time()
         if(this_sample - last_sample >= frequency):
             last_sample = this_sample
             lin_accel = imu.linear_acceleration
