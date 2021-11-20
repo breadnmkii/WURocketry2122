@@ -117,7 +117,6 @@ def main():
     print("Waiting for launch...")
     while(not hasLaunched):
         this_sample = time.time()
-        print(this_sample - last_sample)
         if(this_sample - last_sample >= frequency):
             last_sample = this_sample
             lin_accel = imu.linear_acceleration
@@ -140,6 +139,7 @@ def main():
     # Loop continuously gathers IMU data between hasLaunched and hasLanded
     while(not hasLanded):
         this_sample = time.time()
+        print(this_sample - last_sample)
         if(this_sample - last_sample >= frequency):
             last_sample = this_sample
             lin_accel = imu.linear_acceleration
