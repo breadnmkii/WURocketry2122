@@ -150,7 +150,7 @@ def main():
 
             w = imu.gyro
             a = imu.acceleration        # Grab NON-linear acceleration for use in computation
-            m = imu.magnetic            # NOTE WE CANNOT USE MAG IN REAL LAUNCH
+            # m = imu.magnetic            # NOTE WE CANNOT USE MAG IN REAL LAUNCH
 
             print(w)
             print(a)
