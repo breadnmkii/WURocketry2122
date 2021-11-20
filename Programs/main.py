@@ -170,7 +170,7 @@ def main():
                 print(f"Launch duration:{this_sample-launch_time}")
                 hasLanded = True
             print(f'{motionless_count}\n')
-            # print(f"AcAcc:{abs(sum(acc_accumulator[-window:])/window)}")
+            print(f"AcAcc:{abs(sum(acc_accumulator[-window:])/window)}")
     f.close()
 
     ## Process position data
