@@ -109,7 +109,7 @@ def main():
 
     acc_accumulator  = []        # List containing all acceleration values to apply a rolling mean
     window           = 50
-    MOTION_THRESHOLD = 0.9      # Amount of 3-axis acceleration needed to be read to trigger "movement" detection
+    MOTION_THRESHOLD = 1.3      # Amount of 3-axis acceleration needed to be read to trigger "movement" detection
     motionless_count = 0         # Counter for number of cycles where no motion is detected, resets on movement (determines landing)
     LANDED_COUNT     = 10*(1/frequency) # Number of cycles needed to be exceeded to mark as landed
 
