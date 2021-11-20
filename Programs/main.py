@@ -139,9 +139,9 @@ def main():
     # Loop continuously gathers IMU data between hasLaunched and hasLanded
     while(not hasLanded):
         this_sample = time.time()
-        print(((this_sample - last_sample) >= frequency))
+        
         if(this_sample - last_sample >= frequency):
-            print("sampling")
+            
             last_sample = this_sample
             lin_accel = imu.linear_acceleration
 
@@ -153,6 +153,7 @@ def main():
             m = imu.magnetic            # NOTE WE CANNOT USE MAG IN REAL LAUNCH
 
             if(w[0] is None or a[0] is None or m[0] is None):
+                print("none")
                 continue
 
             f.write(f'{w[0]},{w[1]},{w[2]},')
