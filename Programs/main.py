@@ -104,12 +104,14 @@ def main():
     last_sample = time.monotonic()
     frequency = 1/100
 
-    hasLaunched = False         # Boolean that indicates initial rapid acceleration was detected (launched)
-    hasLanded   = False         # Boolean that indicates no acceleration IF hasLaunched is true  (landed)
+    hasLaunched = False          # Boolean that indicates initial rapid acceleration was detected (launched)
+    hasLanded   = False          # Boolean that indicates no acceleration IF hasLaunched is true  (landed)
 
-    acc_accumulator = []        # List containing all acceleration values to apply a rolling mean
-    window = 50
-    movement_threshold = 0.33      # Amount of 3-axis acceleration needed to be read to trigger "movement" detection
+    acc_accumulator  = []        # List containing all acceleration values to apply a rolling mean
+    window           = 50
+    MOTION_THRESHOLD = 0.33      # Amount of 3-axis acceleration needed to be read to trigger "movement" detection
+    motionless_count = 0         # Counter for number of cycles where no motion is detected, resets on movement (determines landing)
+    LANDED_COUNT     = 10*(1/frequency) # Number of cycles needed to be exceeded to mark as landed
 
     # Loop continously checks whether rocket has launched
     print("Waiting for launch...")
@@ -123,7 +125,7 @@ def main():
                 acc_accumulator.append(sum(lin_accel))
         
         # Take average of latest 'window' elements of 'acc_accumulator' and check if above movement_threshold
-        if(abs(sum(acc_accumulator[-window:])/window) > movement_threshold):
+        if(abs(sum(acc_accumulator[-window:])/window) > MOTION_THRESHOLD):
             print("Launch detected!")
             hasLaunched = True
 
@@ -154,11 +156,17 @@ def main():
             f.write(f'{a[0]},{a[1]},{a[2]},')
             f.write(f'{m[0]},{m[1]},{m[2]}\n')
 
-            # Check after some duration post launch for no more movement (below movement_threshold)
-            if((this_sample - launch_time >= min_imu_time) and abs(sum(acc_accumulator[-window:])/window) < movement_threshold):
+            # Check after some duration post launch for no motion (below movement_threshold)
+            if((this_sample - launch_time >= min_imu_time) and abs(sum(acc_accumulator[-window:])/window) < MOTION_THRESHOLD):
+                motionless_count += 1
+            else:
+                motionless_count = 0    # Reset on motion detection
+            
+            if(motionless_count >= LANDED_COUNT):
                 print("Landing detected!")
                 print(f"Launch duration:{this_sample-launch_time}")
                 hasLanded = True
+                
             print(f"AcAcc:{abs(sum(acc_accumulator[-window:])/window)}")
     f.close()
 
