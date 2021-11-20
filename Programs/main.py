@@ -23,7 +23,7 @@ gps.send_command(b"PMTK220,1000")
 
 # IMU Config
 imu = adafruit_bno055.BNO055_I2C(i2c)
-imu.mode = adafruit_bno055.IMUPLUS_MODE     # NO MAGNETOMETER MODE
+# imu.mode = adafruit_bno055.IMUPLUS_MODE     # NO MAGNETOMETER MODE
 
 # RF Config
 CS = DigitalInOut(board.CE1)
@@ -150,11 +150,7 @@ def main():
 
             w = imu.gyro
             a = imu.acceleration        # Grab NON-linear acceleration for use in computation
-            # m = imu.magnetic            # NOTE WE CANNOT USE MAG IN REAL LAUNCH
-
-            print(w)
-            print(a)
-            print(m)
+            m = imu.magnetic            # NOTE WE CANNOT USE MAG IN REAL LAUNCH
 
             if(w[0] is None or a[0] is None or m[0] is None):
                 continue
