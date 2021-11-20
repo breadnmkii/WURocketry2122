@@ -117,6 +117,7 @@ def main():
     print("Waiting for launch...")
     while(not hasLaunched):
         this_sample = time.time()
+        print(this_sample - last_sample)
         if(this_sample - last_sample >= frequency):
             last_sample = this_sample
             lin_accel = imu.linear_acceleration
@@ -160,10 +161,8 @@ def main():
             # Check after some duration post launch for no motion (below movement_threshold)
             if((this_sample - launch_time >= min_imu_time) and abs(sum(acc_accumulator[-window:])/window) < MOTION_THRESHOLD):
                 motionless_count += 1
-                print("mot_no_detect")
             else:
                 motionless_count = 0    # Reset on motion detection
-                print("mot_detect")
             
             if(motionless_count >= LANDED_COUNT):
                 print("Landing detected!")
