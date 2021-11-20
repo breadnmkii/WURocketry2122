@@ -99,10 +99,10 @@ def main():
             
             last_sample = this_sample
     '''
-
+    
     ### Post-Process Position Tracking ###
     last_sample = time.monotonic()
-    frequency = 1/100
+    frequency = 1/100           # (in seconds)
 
     hasLaunched = False          # Boolean that indicates initial rapid acceleration was detected (launched)
     hasLanded   = False          # Boolean that indicates no acceleration IF hasLaunched is true  (landed)
@@ -161,13 +161,14 @@ def main():
                 motionless_count += 1
             else:
                 motionless_count = 0    # Reset on motion detection
+                print("mot_detect")
             
             if(motionless_count >= LANDED_COUNT):
                 print("Landing detected!")
                 print(f"Launch duration:{this_sample-launch_time}")
                 hasLanded = True
-                
-            print(f"AcAcc:{abs(sum(acc_accumulator[-window:])/window)}")
+            print(motionless_count)
+            # print(f"AcAcc:{abs(sum(acc_accumulator[-window:])/window)}")
     f.close()
 
     ## Process position data
