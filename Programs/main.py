@@ -125,7 +125,7 @@ def main():
                 acc_accumulator.append(sum(lin_accel))
         
         # Take average of latest 'window' elements of 'acc_accumulator' and check if above movement_threshold
-        if(abs(sum(acc_accumulator[-window:])/window) > MOTION_THRESHOLD):
+        if(abs(sum(acc_accumulator[-window:])/window) > MOTION_THRESHOLD + 1):      # +1 for stronger accel from launch
             print("Launch detected!")
             hasLaunched = True
 
@@ -144,7 +144,6 @@ def main():
             
             last_sample = this_sample
             lin_accel = imu.linear_acceleration
-            print(lin_accel)
 
             if(lin_accel[0]):
                 acc_accumulator.append(sum(lin_accel))
@@ -152,6 +151,10 @@ def main():
             w = imu.gyro
             a = imu.acceleration        # Grab NON-linear acceleration for use in computation
             m = imu.magnetic            # NOTE WE CANNOT USE MAG IN REAL LAUNCH
+
+            print(w)
+            print(a)
+            print(m)
 
             if(w[0] is None or a[0] is None or m[0] is None):
                 continue
