@@ -134,11 +134,11 @@ def main():
     f = open("data.txt", "w+")
     print("Watiting for landing...")
     launch_time = time.monotonic()      # Marks time at launch
+    last_sample = launch_time           # Reset delta timing
     min_imu_time = 0.5                   # Minimum time IMU should collect data (prevents immediate landing event detections)
     # Loop continuously gathers IMU data between hasLaunched and hasLanded
     while(not hasLanded):
         this_sample = time.monotonic()
-        print(this_sample - last_sample)
         if(this_sample - last_sample >= frequency):
             last_sample = this_sample
             lin_accel = imu.linear_acceleration
@@ -160,6 +160,7 @@ def main():
             # Check after some duration post launch for no motion (below movement_threshold)
             if((this_sample - launch_time >= min_imu_time) and abs(sum(acc_accumulator[-window:])/window) < MOTION_THRESHOLD):
                 motionless_count += 1
+                print("mot_no_detect")
             else:
                 motionless_count = 0    # Reset on motion detection
                 print("mot_detect")
@@ -168,7 +169,7 @@ def main():
                 print("Landing detected!")
                 print(f"Launch duration:{this_sample-launch_time}")
                 hasLanded = True
-            print(motionless_count)
+            print(motionless_count+"\n")
             # print(f"AcAcc:{abs(sum(acc_accumulator[-window:])/window)}")
     f.close()
 
