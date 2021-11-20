@@ -169,7 +169,7 @@ def main():
                 print("Landing detected!")
                 print(f"Launch duration:{this_sample-launch_time}")
                 hasLanded = True
-            print(motionless_count+"\n")
+            print(f'{motionless_count}\n')
             # print(f"AcAcc:{abs(sum(acc_accumulator[-window:])/window)}")
     f.close()
 
