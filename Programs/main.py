@@ -203,8 +203,11 @@ def main():
     ## Save data
     print("Saved data to file!")
     f = open("landing.txt", "w+")
+    e = open("displcaement.txt", "w+")
+    e.write(final_position)
     f.write(str_grid)
     f.close()
+    e.close()
 
     ## Send data 
     print("Send signal loop...")
