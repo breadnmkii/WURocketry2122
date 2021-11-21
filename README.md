@@ -28,4 +28,6 @@ Dependencies (LibofRelax IMU Tracking):
 
 Dependencies (scikit-kinematics IMU Library):
    
-    pip3 install scikit-kinematics
+    pip install scikit-kinematics
+
+* Update With: **pip install --upgrade --no-deps scikit-kinematics**
