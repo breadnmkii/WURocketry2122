@@ -16,14 +16,16 @@ Setup:
     sudo apt-get install libatlas-base-dev
     
 
-Library Dependencies:
+Recommended to use venvs for each individual 3rd-party library (separate non-core dependencies)
 
-    pip install Pillow
+Core Library Dependencies:
 
-    pip3 install Adafruit-Blinka
-
-    pip3 install adafruit-circuitpython-gps
-
-    pip3 install adafruit-circuitpython-bno055
+    pip install Pillow; pip3 install Adafruit-Blinka; pip3 install adafruit-circuitpython-gps; pip3 install adafruit-circuitpython-bno055; pip3 install adafruit-circuitpython-rfm9x
     
-    pip3 install adafruit-circuitpython-rfm9x
+Dependencies (LibofRelax IMU Tracking):
+
+    pip3 install numpy; pip3 install scipy
+
+Dependencies (scikit-kinematics IMU Library):
+   
+    pip3 install scikit-kinematics
