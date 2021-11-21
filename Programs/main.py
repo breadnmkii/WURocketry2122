@@ -204,7 +204,8 @@ def main():
     print("Saved data to file!")
     f = open("landing.txt", "w+")
     e = open("displcaement.txt", "w+")
-    e.write(final_position)
+    e.write(final_position[0]+"\n") # write x
+    e.write(final_position[1])      # write y
     f.write(str_grid)
     f.close()
     e.close()
