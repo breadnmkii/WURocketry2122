@@ -3,7 +3,7 @@ import math
 import board
 import adafruit_bno055
 
-from skinematics.sensor.manual import MyOwnSensor
+from skinematics.sensors.manual import MyOwnSensor
 
 
 i2c = board.I2C()
