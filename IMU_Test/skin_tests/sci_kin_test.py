@@ -18,7 +18,7 @@ parent_dir = os.path.abspath(os.path.join( os.path.dirname(__file__), '..' ))
 if parent_dir not in sys.path:
     sys.path.insert(0, parent_dir)
 
-from imus import IMU_Base
+from skinematics.imus import IMU_Base
 
 class XSens(IMU_Base):
     """Concrete class based on abstract base class IMU_Base """    
