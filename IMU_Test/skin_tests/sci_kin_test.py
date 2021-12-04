@@ -54,7 +54,7 @@ class XSens(IMU_Base):
         rate = 100.0    # in Hz
         data = pd.read_csv(in_file,
                            sep='\t',
-                           skiprows=0, 
+                           skiprows=4, 
                            index_col=False)
     
         # Extract the columns that you want, and pass them on
