@@ -34,23 +34,14 @@ spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
 while True:
     # Attempt setting up RFM9x Module
     try:
-        rfm9x = adafruit_rfm9x.RFM9x(spi, CS, RESET, 915.0)
+        rfm9x = adafruit_rfm9x.RFM9x(spi, CS, RESET, 433.0)
         rfm9x.tx_power = 23
         print('RFM9x successfully set up!')
         
         while True:
-        
-            # RX
-            rx_packet = rfm9x.receive()
-            if rx_packet is None:
-                print('Did not receive')
-            else:
-                rx_data = str(rx_packet, "utf-8")
-                print(f'Received {rx_data}')
-                time.sleep(1)
-        
+            
             # TX
-            tx_data = bytes('Safe travel, dear bytes!\r\n', 'utf-8')
+            tx_data = bytes('DATA!\r\n', 'utf-8')
             rfm9x.send(tx_data)
             print(f'Sent {tx_data}')
         
