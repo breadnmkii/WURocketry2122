@@ -19,6 +19,7 @@ Author: Brent Rubell for Adafruit Industries
 """
 
 import time
+import datetime     # for testing
 import busio
 import board
 from digitalio import DigitalInOut
@@ -37,16 +38,19 @@ while True:
         rfm9x = adafruit_rfm9x.RFM9x(spi, CS, RESET, 433.0)
         rfm9x.tx_power = 23
         print('RFM9x successfully set up!')
+        f = open("rf_test.txt", "w+")
+        f.write(f"Collection started: {datetime.now()}\n")
         
         while True:
-        
             # RX
             rx_packet = rfm9x.receive()
             if rx_packet is None:
-                print('Fail:')
+                print('Fail!')
             else:
                 rx_data = str(rx_packet, "utf-8")
+                f.write(f"{rx_data}\n")
                 print(f'Succ: {rx_data}')
-                time.sleep(1)
+            time.sleep(0.1)
+
     except RuntimeError as err:
         print("Error setting up, check wiring")

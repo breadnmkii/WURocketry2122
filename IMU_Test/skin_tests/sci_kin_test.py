@@ -5,7 +5,8 @@ Import data saved with XSens-sensors, through subclassing "IMU_Base"
 '''
 Credit: Thomas Haslwanter
 '''
-
+import time
+import math
 import numpy as np
 import pandas as pd
 import abc
@@ -13,6 +14,10 @@ import abc
 # To ensure that the relative path works
 import os
 import sys
+
+# Sensor
+import board
+import adafruit_bno055
 
 parent_dir = os.path.abspath(os.path.join( os.path.dirname(__file__), '..' ))
 if parent_dir not in sys.path:
@@ -57,29 +62,85 @@ class XSens(IMU_Base):
                            skiprows=4, 
                            index_col=False)
     
-        # Extract the columns that you want, and pass them on
+        # Extract data from columns (Each in a 3-vector of x,y,z)
         in_data = {'rate':rate,
                'acc':   data.filter(regex='Acc').values,
                'omega': data.filter(regex='Gyr').values,
                'mag':   data.filter(regex='Mag').values}
         self._set_data(in_data)
 
+samples = 1000
+count = 0
+
 if __name__ == '__main__':
-    bno = XSens(in_file='test_data.txt')
+    
+    i2c = board.I2C()
+    bno = adafruit_bno055.BNO055_I2C(i2c)
+
+    data = {"Samp":[],
+            "AccX":[],
+            "AccY":[],
+            "AccZ":[],
+            "GyrX":[],
+            "GyrY":[],
+            "GyrZ":[],
+            "MagX":[],
+            "MagY":[],
+            "MagZ":[],
+            "QuaX":[],
+            "QuaY":[],
+            "QuaZ":[]}
+    
+    print("Collecting samples...")
+
+    last_sample = time.monotonic()
+    while count < samples:
+        this_sample = time.monotonic()
+
+        if(this_sample-last_sample >= (1/100)):
+            last_sample = this_sample
+            samples -= 1
+
+            acc = bno.acceleration
+            omg = bno.gyro
+            mag = bno.magnetic
+            qua = bno.quaternion
+
+            data["Samp"].append(count)
+            data["AccX"].append(acc[0])
+            data["AccY"].append(acc[1])
+            data["AccZ"].append(acc[2])
+            data["GyrX"].append(omg[0])
+            data["GyrY"].append(omg[1])
+            data["GyrZ"].append(omg[2])
+            data["MagX"].append(mag[0])
+            data["MagY"].append(mag[1])
+            data["MagZ"].append(mag[2])
+            data["QuaX"].append(qua[0])
+            data["QuaY"].append(qua[1])
+            data["QuaZ"].append(qua[2])
+            
+    print("Finished collection!\n")
+
+    df = pd.DataFrame(data, index=None)
+    with open("bno_data.txt", "w") as file:
+        file.write("// Start Time: 0\n// Sample rate: 100.0Hz\n// Scenario: 4.9\n// Firmware Version: 2.5.1\n")
+    
+    df.to_csv("bno_data.txt", index=None, sep="\t", mode="a")
+    
+    print("Wrote data!\n")
+
+    bno = XSens(in_file='bno_data.txt')
+
+    print("Processed data!\n")
 
     print(bno.pos)
 
 
-# import time
-# import math
-# import board
-# import adafruit_bno055
-
 # from skinematics.sensor.manual import MyOwnSensor
 
 
-# i2c = board.I2C()
-# sensor = adafruit_bno055.BNO055_I2C(i2c)
+
 
 # # Initial skinematics sensor setup
 # in_data = {'rate':   100.,
