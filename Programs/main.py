@@ -191,19 +191,20 @@ def main():
     last_sample = launch_time           # Reset delta timing
     min_imu_time = 0.5                   # Minimum time IMU should collect data (prevents immediate landing event detections)
 
-    data = {"Samp":[],
-            "AccX":[],
-            "AccY":[],
-            "AccZ":[],
-            "GyrX":[],
-            "GyrY":[],
-            "GyrZ":[],
-            "MagX":[],
-            "MagY":[],
-            "MagZ":[],
-            "QuaX":[],
-            "QuaY":[],
-            "QuaZ":[]}
+    data = {"Counter":[],
+            "Acc_X":[],
+            "Acc_Y":[],
+            "Acc_Z":[],
+            "Gyr_X":[],
+            "Gyr_Y":[],
+            "Gyr_Z":[],
+            "Mag_X":[],
+            "Mag_Y":[],
+            "Mag_Z":[],
+            "Quat_w":[],
+            "Quat_x":[],
+            "Quat_y":[],
+            "Quat_z":[]}
     count = 0
 
     # Loop continuously gathers IMU data between hasLaunched and hasLanded
@@ -218,7 +219,7 @@ def main():
             if(lin_accel[0]):
                 acc_accumulator.append(sum(lin_accel))
 
-            acc = imu.acceleration
+            acc = imu.linear_acceleration
             omg = imu.gyro
             mag = imu.magnetic
             qua = imu.quaternion
@@ -226,19 +227,20 @@ def main():
             if(omg[0] is None or acc[0] is None or mag[0] is None or qua[0] is None):
                 continue
 
-            data["Samp"].append(count)
-            data["AccX"].append(acc[0])
-            data["AccY"].append(acc[1])
-            data["AccZ"].append(acc[2])
-            data["GyrX"].append(omg[0])
-            data["GyrY"].append(omg[1])
-            data["GyrZ"].append(omg[2])
-            data["MagX"].append(mag[0])
-            data["MagY"].append(mag[1])
-            data["MagZ"].append(mag[2])
-            data["QuaX"].append(qua[0])
-            data["QuaY"].append(qua[1])
-            data["QuaZ"].append(qua[2])
+            data["Counter"].append(count)
+            data["Acc_X"].append(acc[0])
+            data["Acc_Y"].append(acc[1])
+            data["Acc_Z"].append(acc[2])
+            data["Gyr_X"].append(omg[0])
+            data["Gyr_Y"].append(omg[1])
+            data["Gyr_Z"].append(omg[2])
+            data["Mag_X"].append(mag[0])
+            data["Mag_Y"].append(mag[1])
+            data["Mag_Z"].append(mag[2])
+            data["Qua_W"].append(qua[0])
+            data["Qua_X"].append(qua[1])
+            data["Qua_Y"].append(qua[2])
+            data["Qua_Z"].append(qua[3])
             
 
             # f.write(f'{w[0]},{w[1]},{w[2]},')
@@ -270,24 +272,26 @@ def main():
 
     bno = XSens(in_file='data.txt')
     final_position = bno.pos
-    grid_num = grid.dist_to_grid(final_position)
-    str_grid = f'{grid_num[0]},{grid_num[1]}\r\n'
+    # grid_num = grid.dist_to_grid(final_position)
+    # str_grid = f'{grid_num[0]},{grid_num[1]}\r\n'
     
     ## Save data
-    print("Saved data to file!")
-    f = open("landing.txt", "w+")
-    e = open("displcaement.txt", "w+")
+    # print("Saved data to file!")
+    # with open("landing.txt", "w") as file:
+    #     file.write(str_grid)
+    
+    # with open("displacement.txt", "w") as file:
+    #     file.write(final_position)  # FIXME: Write np array
+   
+    
+    ## Transmit data
     print(final_position)
-    f.write(str_grid)
-    f.close()
-    e.close()
 
-    ## Send data 
     print("Send signal loop...")
     while True:
         # Attempt setting up RFM9x Module
         try:
-            rfm9x = adafruit_rfm9x.RFM9x(spi, CS, RESET, 915.0)
+            rfm9x = adafruit_rfm9x.RFM9x(spi, CS, RESET, 433.0)
             rfm9x.tx_power = 23
             print('RFM9x successfully set up!')
             

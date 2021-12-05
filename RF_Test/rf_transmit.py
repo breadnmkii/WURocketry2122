@@ -41,7 +41,7 @@ while True:
         
         while True:
             # TX
-            tx_data = bytes(f'{datetime.now()}\r\n', 'utf-8')
+            tx_data = bytes(f'{datetime.datetime.now()}\r\n', 'utf-8')
             rfm9x.send(tx_data)
             print(f'Sent {tx_data}')
             time.sleep(3)

@@ -39,7 +39,7 @@ while True:
         rfm9x.tx_power = 23
         print('RFM9x successfully set up!')
         f = open("rf_test.txt", "w+")
-        f.write(f"Collection started: {datetime.now()}\n")
+        f.write(f"Collection started: {datetime.datetime.now()}\n")
         
         while True:
             # RX
