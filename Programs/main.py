@@ -1,6 +1,9 @@
 # Main file for tracking program
 import time
 import numpy as np
+import pandas as pd
+
+# Board
 import board
 import busio
 from digitalio import DigitalInOut
@@ -14,36 +17,86 @@ import adafruit_rfm9x
 import position as pos  # IMU tracking
 import grid             # Gridding
 
+# IMU_Base
+from skinematics.imus import IMU_Base
 
-i2c = board.I2C()
+class XSens(IMU_Base):
+    """Concrete class based on abstract base class IMU_Base """    
+    
+    def get_data(self, in_file, in_data=None):
+        '''Get the sampling rate, as well as the recorded data,
+        and assign them to the corresponding attributes of "self".
+        
+        Parameters
+        ----------
+        in_file : string
+                Filename of the data-file
+        in_data : not used here
+        
+        Assigns
+        -------
+        - rate : rate
+        - acc : acceleration
+        - omega : angular_velocity
+        - mag : mag_field_direction
+        '''
+        
+        # Get the sampling rate from the second line in the file
+        try:
+            fh = open(in_file)
+            fh.close()
+    
+        except FileNotFoundError:
+            print('{0} does not exist!'.format(in_file))
+            return -1
 
-# GPS Config
-gps = adafruit_gps.GPS_GtopI2C(i2c, debug=False)
-gps.send_command(b"PMTK314,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0")
-gps.send_command(b"PMTK220,1000")
+        # Read the data
+        rate = 100.0    # in Hz
+        data = pd.read_csv(in_file,
+                           sep='\t',
+                           skiprows=4, 
+                           index_col=False)
+    
+        # Extract data from columns (Each in a 3-vector of x,y,z)
+        in_data = {'rate':rate,
+               'acc':   data.filter(regex='Acc').values,
+               'omega': data.filter(regex='Gyr').values,
+               'mag':   data.filter(regex='Mag').values}
+        self._set_data(in_data)
 
-# IMU Config
-imu = adafruit_bno055.BNO055_I2C(i2c)
-# imu.mode = adafruit_bno055.IMUPLUS_MODE     # NO MAGNETOMETER MODE
 
-# RF Config
-CS = DigitalInOut(board.CE1)
-RESET = DigitalInOut(board.D25)
-spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
-
-# Initial GPS acquisition routine
-print("Waiting for GPS fix...")
-# while not gps.has_fix:
-#    gps.update()
-# LAUNCH_COORD = (gps.latitude, gps.longitude)
-
-LAUNCH_COORD = (38.663484, -90.365707)    # Debug test coordinate
-
-print(f"Obtained launch coordinates: {LAUNCH_COORD}")
 
 
 # Main payload routine
 def main():
+
+    ### IMU setup ###
+    i2c = board.I2C()
+
+    # GPS Config
+    gps = adafruit_gps.GPS_GtopI2C(i2c, debug=False)
+    gps.send_command(b"PMTK314,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0")
+    gps.send_command(b"PMTK220,1000")
+
+    # IMU Config
+    imu = adafruit_bno055.BNO055_I2C(i2c)
+    # imu.mode = adafruit_bno055.IMUPLUS_MODE     # NO MAGNETOMETER MODE
+
+    # RF Config
+    CS = DigitalInOut(board.CE1)
+    RESET = DigitalInOut(board.D25)
+    spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
+
+    # Initial GPS acquisition routine
+    print("Waiting for GPS fix...")
+    # while not gps.has_fix:
+    #    gps.update()
+    # LAUNCH_COORD = (gps.latitude, gps.longitude)
+
+    LAUNCH_COORD = (38.663484, -90.365707)    # Debug test coordinate
+
+    print(f"Obtained launch coordinates: {LAUNCH_COORD}")
+
     # Two dimensional vectors
     current_coord = LAUNCH_COORD    # TODO: let current_coord be GPS coord
     current_grid = (0,0)
@@ -132,11 +185,27 @@ def main():
 
     acc_accumulator = []                # Accumulates LINEAR acceleration (to determine absolute movement)
    
-    f = open("data.txt", "w+")
+    # f = open("data.txt", "w+")
     print("Watiting for landing...")
     launch_time = time.time()      # Marks time at launch
     last_sample = launch_time           # Reset delta timing
     min_imu_time = 0.5                   # Minimum time IMU should collect data (prevents immediate landing event detections)
+
+    data = {"Samp":[],
+            "AccX":[],
+            "AccY":[],
+            "AccZ":[],
+            "GyrX":[],
+            "GyrY":[],
+            "GyrZ":[],
+            "MagX":[],
+            "MagY":[],
+            "MagZ":[],
+            "QuaX":[],
+            "QuaY":[],
+            "QuaZ":[]}
+    count = 0
+
     # Loop continuously gathers IMU data between hasLaunched and hasLanded
     while(not hasLanded):
         this_sample = time.time()
@@ -149,16 +218,32 @@ def main():
             if(lin_accel[0]):
                 acc_accumulator.append(sum(lin_accel))
 
-            w = imu.gyro
-            a = imu.acceleration        # Grab NON-linear acceleration for use in computation
-            m = imu.magnetic            # NOTE WE CANNOT USE MAG IN REAL LAUNCH
+            acc = imu.acceleration
+            omg = imu.gyro
+            mag = imu.magnetic
+            qua = imu.quaternion
 
-            if(w[0] is None or a[0] is None or m[0] is None):
+            if(omg[0] is None or acc[0] is None or mag[0] is None or qua[0] is None):
                 continue
 
-            f.write(f'{w[0]},{w[1]},{w[2]},')
-            f.write(f'{a[0]},{a[1]},{a[2]},')
-            f.write(f'{m[0]},{m[1]},{m[2]}\n')
+            data["Samp"].append(count)
+            data["AccX"].append(acc[0])
+            data["AccY"].append(acc[1])
+            data["AccZ"].append(acc[2])
+            data["GyrX"].append(omg[0])
+            data["GyrY"].append(omg[1])
+            data["GyrZ"].append(omg[2])
+            data["MagX"].append(mag[0])
+            data["MagY"].append(mag[1])
+            data["MagZ"].append(mag[2])
+            data["QuaX"].append(qua[0])
+            data["QuaY"].append(qua[1])
+            data["QuaZ"].append(qua[2])
+            
+
+            # f.write(f'{w[0]},{w[1]},{w[2]},')
+            # f.write(f'{a[0]},{a[1]},{a[2]},')
+            # f.write(f'{m[0]},{m[1]},{m[2]}\n')
 
             # Check after some duration post launch for no motion (below movement_threshold)
             if((this_sample - launch_time >= min_imu_time) and abs(sum(acc_accumulator[-window:])/window) < MOTION_THRESHOLD):
@@ -172,32 +257,19 @@ def main():
                 hasLanded = True
             print(f'{motionless_count}\n')
             print(f"AcAcc:{abs(sum(acc_accumulator[-window:])/window)}")
-    f.close()
 
-    ## Process position data
-    # EKF step
-    tracker = pos.IMUTracker(sampling=100)
-    data = pos.receive_data()    # reads IMU data from file
+            count += 1
+    # f.close()
 
-    print('Initializing tracker computation...')
-    init_list = tracker.initialize(data)
+    ## Format data to file
+    print("Processing data...\n")
+    df = pd.DataFrame(data, index=None)
+    with open("data.txt", "w") as file:
+        file.write("// Start Time: 0\n// Sample rate: 100.0Hz\n// Scenario: 4.9\n// Firmware Version: 2.5.1\n")
+    df.to_csv("data.txt", index=None, sep="\t", mode="a")
 
-    a_nav, orix, oriy, oriz = tracker.attitudeTrack(data, init_list)
-
-    # Acceleration correction step
-    a_nav_filtered = tracker.removeAccErr(a_nav, filter=False)
-    # plot3([a_nav, a_nav_filtered])
-
-    # ZUPT step
-    v = tracker.zupt(a_nav_filtered, threshold=0.2)
-    # plot3([v])
-
-    # Integration Step
-    position_data = tracker.positionTrack(a_nav_filtered, v)
-    
-    ## Calculate grid number
-    # Grab last displacement value's (x,y) from position data
-    final_position = (position_data[-1][0], position_data[-1][1]) 
+    bno = XSens(in_file='data.txt')
+    final_position = bno.pos
     grid_num = grid.dist_to_grid(final_position)
     str_grid = f'{grid_num[0]},{grid_num[1]}\r\n'
     
