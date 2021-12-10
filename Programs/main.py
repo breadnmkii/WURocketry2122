@@ -1,7 +1,5 @@
 # Main file for tracking program
 import time
-import numpy as np
-import pandas as pd
 
 # Board
 import board
@@ -17,9 +15,13 @@ import adafruit_rfm9x
 import position as pos  # IMU tracking
 import grid             # Gridding
 
-# IMU_Base
-from skinematics.imus import IMU_Base
+""" Temporarily Disabled """
+# # Skinematics
+# from skinematics.imus import IMU_Base
+# import numpy as np
+# import pandas as pd
 
+"""
 class XSens(IMU_Base):
     """Concrete class based on abstract base class IMU_Base """    
     
@@ -63,7 +65,7 @@ class XSens(IMU_Base):
                'omega': data.filter(regex='Gyr').values,
                'mag':   data.filter(regex='Mag').values}
         self._set_data(in_data)
-
+"""
 
 def acquire_gps(gps):
     while not gps.has_fix:
@@ -208,17 +210,19 @@ def main():
                 print(f"Launch duration:{this_sample-launch_time}")
                 hasLanded = True
                 break
-            
-    # Format data to file
-    print("Processing data...\n")
-    df = pd.DataFrame(data, index=None)
-    with open("data.txt", "w") as file:
-        file.write("// Start Time: 0\n// Sample rate: 100.0Hz\n// Scenario: 4.9\n// Firmware Version: 2.5.1\n")
-    df.to_csv("data.txt", index=None, sep="\t", mode="a")
+    
+    """ Temporarily Disabled Library """
+    # # Format data to file
+    # print("Processing data...\n")
+    # df = pd.DataFrame(data, index=None)
+    # with open("data.txt", "w") as file:
+    #     file.write("// Start Time: 0\n// Sample rate: 100.0Hz\n// Scenario: 4.9\n// Firmware Version: 2.5.1\n")
+    # df.to_csv("data.txt", index=None, sep="\t", mode="a")
 
-    # Process data with skinematics
-    bno = XSens(in_file='data.txt')
-    final_position = bno.pos    # FIXME: Write np array
+    # # Process data with skinematics
+    # bno = XSens(in_file='data.txt')
+    # final_position = bno.pos    # FIXME: Write np array
+    final_position = (100,100)
 
     # Calculate grid number
     grid_num = grid.dist_to_grid(final_position)
