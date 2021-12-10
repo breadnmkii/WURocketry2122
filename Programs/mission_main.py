@@ -244,7 +244,7 @@ def main():
     # # Format data to file
     # print("Processing data...\n")
     # df = pd.DataFrame(data, index=None)
-    # with open("data.txt", "w") as file:
+    # with open("files/data.txt", "w") as file:
     #     file.write("// Start Time: 0\n// Sample rate: 100.0Hz\n// Scenario: 4.9\n// Firmware Version: 2.5.1\n")
     # df.to_csv("data.txt", index=None, sep="\t", mode="a")
 
@@ -259,10 +259,10 @@ def main():
     
     # Save data
     print("Saved data to file!")
-    with open("grid_number.txt", "w") as file:
+    with open("files/grid_number.txt", "w") as file:
         file.write(str_grid)
     
-    with open("final_position.txt", "w") as file:
+    with open("files/final_position.txt", "w") as file:
         file.write(final_position)
 
     # Transmit data

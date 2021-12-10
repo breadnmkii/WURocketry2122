@@ -28,8 +28,8 @@ while valid_count > 0:
         rfm9x = adafruit_rfm9x.RFM9x(spi, CS, RESET, 433.0)
         rfm9x.tx_power = 23
         print('RFM9x successfully set up!')
-        grid_f = open("grid_number.txt", "w+")
-        comm_f = open("blackbox.txt", "w+")
+        grid_f = open("files/grid_number.txt", "w+")
+        comm_f = open("files/blackbox.txt", "w+")
 
         while True:
             # RX
