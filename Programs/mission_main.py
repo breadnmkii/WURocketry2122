@@ -183,7 +183,7 @@ def main():
     transmit_rf(rfm9x, "EVENT: LAUNCH\n")
 
     print("Watiting for landing...")
-    transmit_rf("WAIT: LANDING\n")
+    transmit_rf(rfm9x, "WAIT: LANDING\n")
     acc_accumulator.clear()
     launch_time = time.time()       # Marks time at launch
     last_sample = launch_time       # Reset delta timing
