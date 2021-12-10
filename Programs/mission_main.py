@@ -118,8 +118,8 @@ def main():
 
     # Initial GPS acquisition routine
     print("Acquiring GPS fix...")
-    # LAUNCH_COORD = acquire_gps(gps)
-    LAUNCH_COORD = (38.663484, -90.365707)    # Debug test coordinate
+    LAUNCH_COORD = acquire_gps(gps)
+    # LAUNCH_COORD = (38.663484, -90.365707)    # Debug test coordinate
     print(f"Acquired: {LAUNCH_COORD}")
     transmit_rf(rfm9x, f"LAUNCH_COORD: {LAUNCH_COORD}\n")
     
@@ -131,19 +131,19 @@ def main():
     
     ### Post-Process Position Tracking ###
     last_sample = time.time()
-    frequency = 1/50               # (in seconds)
+    frequency = 1/50                # (in seconds)
 
-    hasLaunched = False             # Boolean that indicates initial rapid acceleration was detected (launched)
-    hasLanded   = False             # Boolean that indicates no acceleration IF hasLaunched is true  (landed)
+    hasLaunched = False              # Boolean that indicates initial rapid acceleration was detected (launched)
+    hasLanded   = False              # Boolean that indicates no acceleration IF hasLaunched is true  (landed)
 
-    acc_accumulator  = []           # List that accumulates acceleration values to apply a rolling mean
-    motionless_count = 0            # Counter for number of cycles where no motion is detected, resets on movement (determines landing)
+    acc_accumulator  = []            # List that accumulates acceleration values to apply a rolling mean
+    motionless_count = 0             # Counter for number of cycles where no motion is detected, resets on movement (determines landing)
 
-    ACC_WINDOW = 50                 # Range of values to apply rolling average in 'acc_accumulator'
-    MIN_IMU_TIME = 0.5              # (seconds) Minimum time IMU should collect data to prevent immediate landing event detection
-    MOTION_SENSITIVITY = 1        # Amount of 3-axis acceleration needed to be read to trigger "movement" detection
-    MOTION_LAUNCH_SENSITIVITY = 0   # Amount of accel added to offset for stronger initial launch accel
-    LANDED_COUNT = 10*(1/frequency) # Number of cycles needed to be exceeded to mark as landed
+    ACC_WINDOW = 50                  # Range of values to apply rolling average in 'acc_accumulator'
+    MIN_IMU_TIME = 0.5               # (seconds) Minimum time IMU should collect data to prevent immediate landing event detection
+    MOTION_SENSITIVITY = 3           # Amount of 3-axis acceleration needed to be read to trigger "movement" detection
+    MOTION_LAUNCH_SENSITIVITY = 14.7 # Amount of accel added to offset for stronger initial launch accel
+    LANDED_COUNT = 10*(1/frequency)  # Number of cycles needed to be exceeded to mark as landed
 
     # Dictionary for IMU sensor readings
     data = {"Counter":[],
@@ -160,6 +160,8 @@ def main():
         "Quat_x":[],
         "Quat_y":[],
         "Quat_z":[]}
+
+    data_f = open("files/vehicle_blackbox.txt", "w+")
 
     # Loop continously checks whether vehicle has launched
     print("Waiting for launch...")
@@ -225,6 +227,7 @@ def main():
             transmit_rf(rfm9x, f"\n{datetime.datetime.now()}\n")
             transmit_rf(rfm9x, f"ACC_X: {acc[0]}\tACC_Y: {acc[1]}\tACC_Z: {acc[2]}\n")
             transmit_rf(rfm9x, f"GYR_X: {omg[0]}\tGYR_Y: {omg[1]}\tGYR_Z: {omg[2]}\n")
+            data_f.write(f"ACC_X: {acc[0]}\tACC_Y: {acc[1]}\tACC_Z: {acc[2]}\n")
 
             # Check after some duration post launch for no motion (below movement_threshold)
             if((this_sample - launch_time >= MIN_IMU_TIME) and average_window(acc_accumulator, ACC_WINDOW) < MOTION_SENSITIVITY):
