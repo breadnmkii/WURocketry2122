@@ -131,7 +131,7 @@ def main():
     
     ### Post-Process Position Tracking ###
     last_sample = time.time()
-    frequency = 1/100               # (in seconds)
+    frequency = 1/50               # (in seconds)
 
     hasLaunched = False             # Boolean that indicates initial rapid acceleration was detected (launched)
     hasLanded   = False             # Boolean that indicates no acceleration IF hasLaunched is true  (landed)
