@@ -11,33 +11,35 @@ CS = DigitalInOut(board.CE1)
 RESET = DigitalInOut(board.D25)
 spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
 
-file = open("receiving.txt", "w+")
+# Validity count to ensure at least 'n' samples of grid_number is received
+valid_count = 5
 
 while True:
     # Attempt setting up RFM9x Module
     try:
-        rfm9x = adafruit_rfm9x.RFM9x(spi, CS, RESET, 915.0)
+        rfm9x = adafruit_rfm9x.RFM9x(spi, CS, RESET, 433.0)
         rfm9x.tx_power = 23
         print('RFM9x successfully set up!')
-        
+        grid_f = open("grid_number.txt", "w+")
+        comm_f = open("blackbox.txt", "w+")
+
         while True:
-        
-            count = 1
             # RX
             rx_packet = rfm9x.receive()
             if rx_packet is None:
-                print('Did not receive')
+                print('Fail')
             else:
-                count += 1
                 rx_data = str(rx_packet, "utf-8")
                 if rx_data != None:
-                    file.write(rx_data)
-                f = open("receiving.txt", "r")
-                print(f.read())
-                time.sleep(1)
-                
-            if count==1000:
-                file.close
+                    if(rx_data[:3] == "KEY"):
+                        grid_f.write(rx_data+"\n")
+                        valid_count -= 1
+                    else:
+                        comm_f.write(rx_data)
+            if valid_count < 0:
+                break
+
+            time.sleep(0.1)
     
     except RuntimeError as error:
         print('Error in setting up RFM9x... check wiring.')

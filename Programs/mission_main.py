@@ -1,5 +1,6 @@
 # Main file for tracking program
 import time
+import datetime
 
 # Board
 import board
@@ -75,6 +76,23 @@ def average_window(list, window):
     return sum(map(lambda acc: abs(acc), list[-window:]))/window
 
 
+def setup_rf(spi, CS, RESET, FREQ):
+    while True:
+        # Attempt setting up RFM9x Module
+        try:
+            rfm9x = adafruit_rfm9x.RFM9x(spi, CS, RESET, FREQ)
+            rfm9x.tx_power = 23
+            print('RFM9x SET\n')
+            return rfm9x
+
+        except RuntimeError as error:
+            print('RFM9 ERR: Check wiring\n')
+
+def transmit_rf(rfm9x, string):
+    tx_data = bytes(string, 'utf-8')
+    rfm9x.send(tx_data)
+
+
 # Main payload routine
 def main():
     """ Peripheral Setup """
@@ -90,15 +108,21 @@ def main():
     imu.mode = adafruit_bno055.IMUPLUS_MODE     # NO MAGNETOMETER MODE
 
     # RF
+    FREQ = 433.0
     CS = DigitalInOut(board.CE1)
     RESET = DigitalInOut(board.D25)
     spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
+    rfm9x = setup_rf(spi, CS, RESET, FREQ)
+
+    transmit_rf(rfm9x, "SETUP: DONE\n")
 
     # Initial GPS acquisition routine
-    print("Waiting for GPS fix...")
-    LAUNCH_COORD = acquire_gps(gps)
-    # LAUNCH_COORD = (38.663484, -90.365707)    # Debug test coordinate
-    print(f"Obtained launch coordinates: {LAUNCH_COORD}")
+    print("Acquiring GPS fix...")
+    # LAUNCH_COORD = acquire_gps(gps)
+    LAUNCH_COORD = (38.663484, -90.365707)    # Debug test coordinate
+    print(f"Acquired: {LAUNCH_COORD}")
+    transmit_rf(f"LAUNCH_COORD: {LAUNCH_COORD}\n")
+    
 
     # Two dimensional vectors
     current_coord = LAUNCH_COORD
@@ -117,8 +141,8 @@ def main():
 
     ACC_WINDOW = 50                 # Range of values to apply rolling average in 'acc_accumulator'
     MIN_IMU_TIME = 0.5              # (seconds) Minimum time IMU should collect data to prevent immediate landing event detection
-    MOTION_SENSITIVITY = 1.5        # Amount of 3-axis acceleration needed to be read to trigger "movement" detection
-    MOTION_LAUNCH_SENSITIVITY = 5   # Amount of accel added to offset for stronger initial launch accel
+    MOTION_SENSITIVITY = 1        # Amount of 3-axis acceleration needed to be read to trigger "movement" detection
+    MOTION_LAUNCH_SENSITIVITY = 0   # Amount of accel added to offset for stronger initial launch accel
     LANDED_COUNT = 10*(1/frequency) # Number of cycles needed to be exceeded to mark as landed
 
     # Dictionary for IMU sensor readings
@@ -139,6 +163,7 @@ def main():
 
     # Loop continously checks whether vehicle has launched
     print("Waiting for launch...")
+    transmit_rf(rfm9x, "WAIT: LAUNCH\n")
     while(not hasLaunched):
         this_sample = time.time()
         if(this_sample - last_sample >= frequency):
@@ -155,10 +180,11 @@ def main():
             print("Launch detected!")
             hasLaunched = True
             break
+    transmit_rf(rfm9x, "EVENT: LAUNCH\n")
 
-    acc_accumulator.clear()
-   
     print("Watiting for landing...")
+    transmit_rf("WAIT: LANDING\n")
+    acc_accumulator.clear()
     launch_time = time.time()       # Marks time at launch
     last_sample = launch_time       # Reset delta timing
 
@@ -196,6 +222,10 @@ def main():
             data["Qua_Y"].append(qua[2])
             data["Qua_Z"].append(qua[3])
             
+            transmit_rf(rfm9x, f"\n{datetime.datetime.now()}\n")
+            transmit_rf(rfm9x, f"ACC_X: {acc[0]}\tACC_Y: {acc[1]}\tACC_Z: {acc[2]}\n")
+            transmit_rf(rfm9x, f"GYR_X: {omg[0]}\tGYR_Y: {omg[1]}\tGYR_Z: {omg[2]}\n")
+
             # Check after some duration post launch for no motion (below movement_threshold)
             if((this_sample - launch_time >= MIN_IMU_TIME) and average_window(acc_accumulator, ACC_WINDOW) < MOTION_SENSITIVITY):
                 motionless_count += 1
@@ -208,6 +238,7 @@ def main():
                 print(f"Launch duration:{this_sample-launch_time}")
                 hasLanded = True
                 break
+    transmit_rf(rfm9x, "EVENT: LANDING\n")
     
     """ Temporarily Disabled Library """
     # # Format data to file
@@ -235,23 +266,9 @@ def main():
         file.write(final_position)
 
     # Transmit data
-    print(final_position)
-
     print("Send signal loop...")
     while True:
-        # Attempt setting up RFM9x Module
-        try:
-            rfm9x = adafruit_rfm9x.RFM9x(spi, CS, RESET, 433.0)
-            rfm9x.tx_power = 23
-            print('RFM9x successfully set up!')
-            
-            while True:
-                # TX
-                tx_data = bytes(str_grid, 'utf-8')
-                rfm9x.send(tx_data)
-
-        except RuntimeError as error:
-            print('Error in setting up RFM9x... check wiring.')
+        transmit_rf(rfm9x, f"KEY:{str_grid}")
 
 
 if __name__ == '__main__':
