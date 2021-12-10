@@ -8,8 +8,8 @@ import RPi.GPIO as GPIO
 import adafruit_rfm9x
 
 # Configure GPIO pins
-LED_PIN = 11
-GPIO.setmode(GPIO.BOARD)
+LED_PIN = 4
+GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 GPIO.setup(LED_PIN,GPIO.OUT)
 
