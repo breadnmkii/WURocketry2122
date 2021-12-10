@@ -22,9 +22,7 @@ import grid             # Gridding
 # import pandas as pd
 
 """
-class XSens(IMU_Base):
-    """Concrete class based on abstract base class IMU_Base """    
-    
+class XSens(IMU_Base):    
     def get_data(self, in_file, in_data=None):
         '''Get the sampling rate, as well as the recorded data,
         and assign them to the corresponding attributes of "self".
