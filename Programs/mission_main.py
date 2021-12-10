@@ -121,7 +121,7 @@ def main():
     # LAUNCH_COORD = acquire_gps(gps)
     LAUNCH_COORD = (38.663484, -90.365707)    # Debug test coordinate
     print(f"Acquired: {LAUNCH_COORD}")
-    transmit_rf(f"LAUNCH_COORD: {LAUNCH_COORD}\n")
+    transmit_rf(rfm9x, f"LAUNCH_COORD: {LAUNCH_COORD}\n")
     
 
     # Two dimensional vectors
