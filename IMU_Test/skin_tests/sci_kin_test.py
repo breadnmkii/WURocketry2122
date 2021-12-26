@@ -104,11 +104,11 @@ if __name__ == '__main__':
             mag = bno.magnetic
             qua = bno.quaternion
 
-            map(acc, lambda x: round(x, 6))
-            map(omg, lambda x: round(x, 6))
-            map(mag, lambda x: round(x, 6))
-            map(qua, lambda x: round(x, 6))
-            
+            map(lambda x: round(x, 6), acc)
+            map(lambda x: round(x, 6), omg)
+            map(lambda x: round(x, 6), mag)
+            map(lambda x: round(x, 6), qua)
+
             data["Acc_X"].append(acc[0])
             data["Acc_Y"].append(acc[1])
             data["Acc_Z"].append(acc[2])
