@@ -127,8 +127,8 @@ if __name__ == '__main__':
     
     print("Wrote data!\n")
 
-    # bno = XSens(in_file='bno_data.txt')
+    bno = XSens(in_file='bno_data.txt')
 
-    # print("Processed data!\n")
+    print("Processed data!\n")
 
-    # print(bno.pos)
+    print(bno.pos)
