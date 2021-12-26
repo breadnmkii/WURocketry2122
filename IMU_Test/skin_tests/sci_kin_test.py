@@ -56,10 +56,10 @@ class XSens(IMU_Base):
             return -1
 
         # Read the data
-        rate = 100.0    # in Hz
         data = pd.read_csv(in_file,
                            sep='\t',
                            index_col=False)
+        rate = 50   # in Hz
     
         # Extract data from columns (Each in a 3-vector of x,y,z)
         in_data = {'rate':rate,
@@ -72,7 +72,7 @@ samples = 1000
 count = 0
 
 if __name__ == '__main__':
-    rate = 100
+    rate = 50
     i2c = board.I2C()
     bno = adafruit_bno055.BNO055_I2C(i2c)
 
