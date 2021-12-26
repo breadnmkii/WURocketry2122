@@ -85,10 +85,10 @@ if __name__ == '__main__':
             "Mag_X":[],
             "Mag_Y":[],
             "Mag_Z":[],
-            "Quat_w":[],
-            "Quat_x":[],
-            "Quat_y":[],
-            "Quat_z":[]}
+            "Qua_W":[],
+            "Qua_X":[],
+            "Qua_Y":[],
+            "Qua_Z":[]}
     
     print("Collecting samples...")
 
