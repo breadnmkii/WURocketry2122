@@ -103,6 +103,11 @@ if __name__ == '__main__':
             omg = bno.gyro
             mag = bno.magnetic
             qua = bno.quaternion
+
+            map(acc, lambda x: round(x, 6))
+            map(omg, lambda x: round(x, 6))
+            map(mag, lambda x: round(x, 6))
+            map(qua, lambda x: round(x, 6))
             
             data["Acc_X"].append(acc[0])
             data["Acc_Y"].append(acc[1])
