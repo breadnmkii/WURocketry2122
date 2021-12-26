@@ -59,7 +59,6 @@ class XSens(IMU_Base):
         rate = 100.0    # in Hz
         data = pd.read_csv(in_file,
                            sep='\t',
-                           skiprows=4, 
                            index_col=False)
     
         # Extract data from columns (Each in a 3-vector of x,y,z)
@@ -73,12 +72,11 @@ samples = 1000
 count = 0
 
 if __name__ == '__main__':
-    
+    rate = 100
     i2c = board.I2C()
     bno = adafruit_bno055.BNO055_I2C(i2c)
 
-    data = {"Counter":[],
-            "Acc_X":[],
+    data = {"Acc_X":[],
             "Acc_Y":[],
             "Acc_Z":[],
             "Gyr_X":[],
@@ -98,15 +96,14 @@ if __name__ == '__main__':
     while count < samples:
         this_sample = time.monotonic()
 
-        if(this_sample-last_sample >= (1/100)):
+        if(this_sample-last_sample >= (1/rate)):
             last_sample = this_sample
 
             acc = bno.linear_acceleration
             omg = bno.gyro
             mag = bno.magnetic
             qua = bno.quaternion
-
-            data["Counter"].append(count)
+            
             data["Acc_X"].append(acc[0])
             data["Acc_Y"].append(acc[1])
             data["Acc_Z"].append(acc[2])
@@ -120,44 +117,16 @@ if __name__ == '__main__':
             data["Qua_X"].append(qua[1])
             data["Qua_Y"].append(qua[2])
             data["Qua_Z"].append(qua[3])
-
-            count -= 1
             
     print("Finished collection!\n")
 
     df = pd.DataFrame(data, index=None)
-    with open("bno_data.txt", "w") as file:
-        file.write("// Start Time: 0\n// Sample rate: 100.0Hz\n// Scenario: 4.9\n// Firmware Version: 2.5.1\n")
     df.to_csv("bno_data.txt", index=None, sep="\t", mode="a")
     
     print("Wrote data!\n")
 
-    bno = XSens(in_file='bno_data.txt')
+    # bno = XSens(in_file='bno_data.txt')
 
-    print("Processed data!\n")
+    # print("Processed data!\n")
 
-    print(bno.pos)
-
-
-# from skinematics.sensor.manual import MyOwnSensor
-
-
-
-
-# # Initial skinematics sensor setup
-# in_data = {'rate':   100.,
-#             'acc':   sensor.acceleration,
-#             'omega': sensor.gyro,
-#             'mag':   sensor.magnetic}
-
-# last_sample = time.monotonic()
-# while True:
-#     this_sample = time.monotonic()
-
-#     if(this_sample-last_sample >= (1/100)):
-#         last_sample = this_sample
-
-#         # Do data collection/file writing here
-
-# skin_sensor = MyOwnSensor(in_file='BNO055 Sensor', in_data=in_data)
-
+    # print(bno.pos)
