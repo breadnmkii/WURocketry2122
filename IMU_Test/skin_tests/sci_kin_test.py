@@ -66,6 +66,11 @@ class XSens(IMU_Base):
                'acc':   data.filter(regex='Acc').values,
                'omega': data.filter(regex='Gyr').values,
                'mag':   data.filter(regex='Mag').values}
+        
+        print(in_data["acc"])
+        print(in_data["omega"])
+        print(in_data["mag"])
+
         self._set_data(in_data)
 
 samples = 1000
@@ -84,11 +89,7 @@ if __name__ == '__main__':
             "Gyr_Z":[],
             "Mag_X":[],
             "Mag_Y":[],
-            "Mag_Z":[],
-            "Qua_W":[],
-            "Qua_X":[],
-            "Qua_Y":[],
-            "Qua_Z":[]}
+            "Mag_Z":[]}
     
     print("Collecting samples...")
 
@@ -102,16 +103,14 @@ if __name__ == '__main__':
             acc = bno.linear_acceleration
             omg = bno.gyro
             mag = bno.magnetic
-            qua = bno.quaternion
 
             # Guard against Nonetype reads
-            if(acc[0] is None or omg[0] is None or mag[0] is None or qua[0] is None):
+            if(acc[0] is None or omg[0] is None or mag[0] is None):
                 continue
 
             acc = list(map(lambda x: round(x, 6), acc))
             omg = list(map(lambda x: round(x, 6), omg))
             mag = list(map(lambda x: round(x, 6), mag))
-            qua = list(map(lambda x: round(x, 6), qua))
 
             data["Acc_X"].append(acc[0])
             data["Acc_Y"].append(acc[1])
@@ -122,10 +121,6 @@ if __name__ == '__main__':
             data["Mag_X"].append(mag[0])
             data["Mag_Y"].append(mag[1])
             data["Mag_Z"].append(mag[2])
-            data["Qua_W"].append(qua[0])
-            data["Qua_X"].append(qua[1])
-            data["Qua_Y"].append(qua[2])
-            data["Qua_Z"].append(qua[3])
 
             count += 1
             
