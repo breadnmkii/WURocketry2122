@@ -117,6 +117,8 @@ if __name__ == '__main__':
             data["Qua_X"].append(qua[1])
             data["Qua_Y"].append(qua[2])
             data["Qua_Z"].append(qua[3])
+
+            count += 1
             
     print("Finished collection!\n")
 
