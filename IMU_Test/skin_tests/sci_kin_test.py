@@ -59,7 +59,7 @@ class XSens(IMU_Base):
         data = pd.read_csv(in_file,
                            sep='\t',
                            index_col=False)
-        rate = 50   # in Hz
+        rate = 100   # in Hz
     
         # Extract data from columns (Each in a 3-vector of x,y,z)
         in_data = {'rate':rate,
@@ -72,7 +72,7 @@ samples = 1000
 count = 0
 
 if __name__ == '__main__':
-    rate = 50
+    rate = 100
     i2c = board.I2C()
     bno = adafruit_bno055.BNO055_I2C(i2c)
 
@@ -103,6 +103,10 @@ if __name__ == '__main__':
             omg = bno.gyro
             mag = bno.magnetic
             qua = bno.quaternion
+
+            # Guard against Nonetype reads
+            if(acc[0] is None or omg[0] is None or mag[0] is None or qua[0] is None):
+                continue
 
             acc = list(map(lambda x: round(x, 6), acc))
             omg = list(map(lambda x: round(x, 6), omg))
