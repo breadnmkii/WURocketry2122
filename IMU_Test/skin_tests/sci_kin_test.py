@@ -123,7 +123,7 @@ if __name__ == '__main__':
     print("Finished collection!\n")
 
     df = pd.DataFrame(data, index=None)
-    df.to_csv("bno_data.txt", index=None, sep="\t", mode="a")
+    df.to_csv("bno_data.txt", index=None, sep="\t", mode="w")
     
     print("Wrote data!\n")
 
