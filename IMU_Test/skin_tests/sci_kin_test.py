@@ -68,7 +68,7 @@ class XSens(IMU_Base):
                'mag':   data.filter(regex='Mag').values}
         self._set_data(in_data)
 
-samples = 1000
+samples = 100
 count = 0
 
 if __name__ == '__main__':
