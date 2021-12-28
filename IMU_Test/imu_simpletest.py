@@ -36,16 +36,23 @@ while True:
     if(this_sample - last_sample >= frequency_intv):
         print(f"Sample Time:{last_sample-this_sample}")
         last_sample = this_sample
-        print(f"Gyroscope Data:{sensor.gyro}")
-        print(f"Accelerometer Data:{sensor.acceleration}")
-        print(f"Magnetometer Data:{sensor.magnetic}")
-        #print("Accelerometer (m/s^2): {}".format(sensor.acceleration))
-        #print("Magnetometer (microteslas): {}".format(sensor.magnetic))
-        #print("Gyroscope (rad/sec): {}".format(sensor.gyro))
-        print("Euler angle: {}".format(sensor.euler))
+        # print(f"Gyroscope Data:{sensor.gyro}")
+        # print(f"Accelerometer Data:{sensor.acceleration}")
+        # print(f"Magnetometer Data:{sensor.magnetic}")
+        # print("Euler angle: {}".format(sensor.euler))
         #print("Quaternion: {}".format(sensor.quaternion))
         #print("Linear acceleration (m/s^2): {}".format(sensor.linear_acceleration))
         #print("Gravity (m/s^2): {}".format(sensor.gravity))
         print(sensor.calibration_status)
         print()
     
+
+""" Notes
+
+Calibration status ranges from (0..3), 0 being uncalibrated.
+Calibration status returns info as (system, gyro, accel, mag) sensors
+  * Data should be ignored when sys cal == 0
+
+
+
+"""
