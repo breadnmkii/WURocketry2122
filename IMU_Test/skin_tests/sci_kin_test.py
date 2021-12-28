@@ -67,12 +67,12 @@ class XSens(IMU_Base):
             'acc':   data.filter(regex='Acc').values,
             'omega': data.filter(regex='Gyr').values}
         
-        print(in_data["acc"].shape)
-        print(in_data["omega"].shape)
+        in_data['acc'] = pd.DataFrame(np.zeros(300, 3))
+        in_data['omega'] = pd.DataFrame(np.zeros(300, 3))
 
         self._set_data(in_data)
 
-samples = 1000
+samples = 300
 count = 0
 
 if __name__ == '__main__':
