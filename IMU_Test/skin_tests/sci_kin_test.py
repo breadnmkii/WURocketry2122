@@ -59,17 +59,16 @@ class XSens(IMU_Base):
         data = pd.read_csv(in_file,
                            sep='\t',
                            index_col=False)
-        rate = 50   # in Hz
+        rate = 100   # in Hz
     
         # Extract data from columns (Each in a 3-vector of x,y,z)
-        in_data = {'rate':rate,
-               'acc':   data.filter(regex='Acc').values,
-               'omega': data.filter(regex='Gyr').values,
-               'mag':   data.filter(regex='Mag').values}
+        in_data = {
+            'rate':rate,
+            'acc':   data.filter(regex='Acc').values,
+            'omega': data.filter(regex='Gyr').values}
         
-        print(in_data["acc"])
-        print(in_data["omega"])
-        print(in_data["mag"])
+        print(in_data["acc"].shape)
+        print(in_data["omega"].shape)
 
         self._set_data(in_data)
 
@@ -77,19 +76,17 @@ samples = 1000
 count = 0
 
 if __name__ == '__main__':
-    rate = 50
+    rate = 100
     i2c = board.I2C()
     bno = adafruit_bno055.BNO055_I2C(i2c)
+    bno.mode = adafruit_bno055.IMUPLUS_MODE
 
     data = {"Acc_X":[],
             "Acc_Y":[],
             "Acc_Z":[],
             "Gyr_X":[],
             "Gyr_Y":[],
-            "Gyr_Z":[],
-            "Mag_X":[],
-            "Mag_Y":[],
-            "Mag_Z":[]}
+            "Gyr_Z":[]}
     
     print("Collecting samples...")
 
@@ -102,15 +99,13 @@ if __name__ == '__main__':
 
             acc = bno.linear_acceleration
             omg = bno.gyro
-            mag = bno.magnetic
 
             # Guard against Nonetype reads
-            if(acc[0] is None or omg[0] is None or mag[0] is None):
+            if(acc[0] is None or omg[0] is None):
                 continue
 
             acc = list(map(lambda x: round(x, 6), acc))
             omg = list(map(lambda x: round(x, 6), omg))
-            mag = list(map(lambda x: round(x, 6), mag))
 
             data["Acc_X"].append(acc[0])
             data["Acc_Y"].append(acc[1])
@@ -118,9 +113,6 @@ if __name__ == '__main__':
             data["Gyr_X"].append(omg[0])
             data["Gyr_Y"].append(omg[1])
             data["Gyr_Z"].append(omg[2])
-            data["Mag_X"].append(mag[0])
-            data["Mag_Y"].append(mag[1])
-            data["Mag_Z"].append(mag[2])
 
             count += 1
             
