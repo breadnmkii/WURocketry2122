@@ -67,8 +67,8 @@ class XSens(IMU_Base):
             'acc':   data.filter(regex='Acc').values,
             'omega': data.filter(regex='Gyr').values}
         
-        in_data['acc'] = pd.DataFrame(np.zeros(300, 3))
-        in_data['omega'] = pd.DataFrame(np.zeros(300, 3))
+        in_data['acc'] = pd.DataFrame(np.zeros((300, 3)))
+        in_data['omega'] = pd.DataFrame(np.zeros((300, 3)))
 
         self._set_data(in_data)
 
