@@ -66,9 +66,6 @@ class XSens(IMU_Base):
             'rate':rate,
             'acc':   data.filter(regex='Acc').values,
             'omega': data.filter(regex='Gyr').values}
-        
-        in_data['acc'] = pd.DataFrame(np.zeros((300, 3)))
-        in_data['omega'] = pd.DataFrame(np.zeros((300, 3)))
 
         self._set_data(in_data)
 
@@ -107,12 +104,12 @@ if __name__ == '__main__':
             acc = list(map(lambda x: round(x, 6), acc))
             omg = list(map(lambda x: round(x, 6), omg))
 
-            data["Acc_X"].append(acc[0])
-            data["Acc_Y"].append(acc[1])
-            data["Acc_Z"].append(acc[2])
-            data["Gyr_X"].append(omg[0])
-            data["Gyr_Y"].append(omg[1])
-            data["Gyr_Z"].append(omg[2])
+            data["Acc_X"].append(0)
+            data["Acc_Y"].append(0)
+            data["Acc_Z"].append(0)
+            data["Gyr_X"].append(0)
+            data["Gyr_Y"].append(0)
+            data["Gyr_Z"].append(0)
 
             count += 1
             
