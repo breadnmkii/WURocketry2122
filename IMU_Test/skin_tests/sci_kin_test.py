@@ -84,6 +84,8 @@ if __name__ == '__main__':
         print(bno.calibration_status)
     print("Calibrated!")
 
+    time.sleep(3)
+
     data = {"Acc_X":[],
             "Acc_Y":[],
             "Acc_Z":[],
