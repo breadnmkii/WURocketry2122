@@ -80,7 +80,7 @@ if __name__ == '__main__':
 
     # Calibration step
     print("Calibrating BNO055...")
-    while(bno.calibration_status != (3,3,3,3)):
+    while(bno.calibration_status != (3,3,3,0)):
         print(bno.calibration_status)
     print("Calibrated!")
 
