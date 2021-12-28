@@ -78,6 +78,12 @@ if __name__ == '__main__':
     bno = adafruit_bno055.BNO055_I2C(i2c)
     bno.mode = adafruit_bno055.IMUPLUS_MODE
 
+    # Calibration step
+    print("Calibrating BNO055...")
+    while(bno.calibration_status != (3,3,3,3)):
+        print(bno.calibration_status)
+    print("Calibrated!")
+
     data = {"Acc_X":[],
             "Acc_Y":[],
             "Acc_Z":[],
