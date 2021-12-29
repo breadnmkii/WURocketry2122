@@ -125,6 +125,8 @@ if __name__ == '__main__':
 
     deg_N = 130  # Degrees from North (when on launchpad)
     init_orient = R.from_euler('zyx', [deg_N,90,0], degrees=True).as_matrix   # Yaw, Pitch, Roll
+    print(type(init_orient))
+    print(init_orient)
     # initial_orient = np.array([[1,0,0],
     #                            [0,1,0],
     #                            [0,0,1]])
