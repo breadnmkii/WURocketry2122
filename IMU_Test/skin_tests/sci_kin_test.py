@@ -75,10 +75,10 @@ if __name__ == '__main__':
     # bno.mode = adafruit_bno055.IMUPLUS_MODE
 
     # Calibration step
-    print("Calibrating BNO055...")
-    while(bno.calibration_status != (3,3,3,3)):
-        print(bno.calibration_status)
-    print("Calibrated!")
+    # print("Calibrating BNO055...")
+    # while(bno.calibration_status != (3,3,3,3)):
+    #     print(bno.calibration_status)
+    # print("Calibrated!")
 
     time.sleep(3)
 
@@ -127,7 +127,7 @@ if __name__ == '__main__':
     deg_N = 130  # Degrees from North (when on launchpad)
     test_orient = R.from_euler('zyx', [deg_N,90,0], degrees=True)   # Yaw, Pitch, Roll
     initial_orient = np.array([[1,0,0],
-                               [0,1,0]
+                               [0,1,0],
                                [0,0,1]])
     bno = XSens(in_file='bno_data.txt', R_init = initial_orient)
 
