@@ -1,10 +1,3 @@
-'''
-Import data saved with XSens-sensors, through subclassing "IMU_Base"
-'''
-
-'''
-Credit: Thomas Haslwanter
-'''
 import time
 import math
 import numpy as np
@@ -19,11 +12,14 @@ import sys
 import board
 import adafruit_bno055
 
+from skinematics.imus import IMU_Base
+from scipy.spatial.transform import Rotation as R
+
 parent_dir = os.path.abspath(os.path.join( os.path.dirname(__file__), '..' ))
 if parent_dir not in sys.path:
     sys.path.insert(0, parent_dir)
 
-from skinematics.imus import IMU_Base
+
 
 class XSens(IMU_Base):
     """Concrete class based on abstract base class IMU_Base """    
@@ -69,10 +65,10 @@ class XSens(IMU_Base):
 
         self._set_data(in_data)
 
-samples = 300
-count = 0
 
 if __name__ == '__main__':
+    samples = 300
+    count = 0
     rate = 100
     i2c = board.I2C()
     bno = adafruit_bno055.BNO055_I2C(i2c)
@@ -128,8 +124,16 @@ if __name__ == '__main__':
     
     print("Wrote data!\n")
 
-    bno = XSens(in_file='bno_data.txt')
+    deg_N = 130  # Degrees from North (when on launchpad)
+    test_orient = R.from_euler('zyx', [deg_N,90,0], degrees=True)   # Yaw, Pitch, Roll
+    initial_orient = np.array([[1,0,0],
+                               [0,1,0]
+                               [0,0,1]])
+    bno = XSens(in_file='bno_data.txt', R_init = initial_orient)
 
     print("Processed data!\n")
+    print("Test orientation:")
+    print(test_orient)
+    print(type(test_orient))
 
     print(bno.pos)
