@@ -66,7 +66,7 @@ class XSens(IMU_Base):
 
 
 if __name__ == '__main__':
-    samples = 300
+    samples = 1000
     count = 0
     rate = 100
     i2c = board.I2C()
