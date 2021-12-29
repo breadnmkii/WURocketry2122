@@ -74,10 +74,10 @@ if __name__ == '__main__':
     # bno.mode = adafruit_bno055.IMUPLUS_MODE
 
     # Calibration step
-    # print("Calibrating BNO055...")
-    # while(bno.calibration_status != (3,3,3,3)):
-    #     print(bno.calibration_status)
-    # print("Calibrated!")
+    print("Calibrating BNO055...")
+    while(bno.calibration_status != (3,3,3,3)):
+        print(bno.calibration_status)
+    print("Calibrated!")
 
     time.sleep(3)
 
