@@ -20,7 +20,6 @@ if parent_dir not in sys.path:
     sys.path.insert(0, parent_dir)
 
 
-
 class XSens(IMU_Base):
     """Concrete class based on abstract base class IMU_Base """    
     
@@ -98,7 +97,7 @@ if __name__ == '__main__':
         if(this_sample-last_sample >= (1/rate)):
             last_sample = this_sample
 
-            acc = bno.linear_acceleration
+            acc = bno.acceleration
             omg = bno.gyro
 
             # Guard against Nonetype reads
@@ -125,15 +124,11 @@ if __name__ == '__main__':
     print("Wrote data!\n")
 
     deg_N = 130  # Degrees from North (when on launchpad)
-    test_orient = R.from_euler('zyx', [deg_N,90,0], degrees=True)   # Yaw, Pitch, Roll
-    initial_orient = np.array([[1,0,0],
-                               [0,1,0],
-                               [0,0,1]])
-    bno = XSens(in_file='bno_data.txt', R_init = initial_orient)
+    init_orient = R.from_euler('zyx', [deg_N,90,0], degrees=True)   # Yaw, Pitch, Roll
+    # initial_orient = np.array([[1,0,0],
+    #                            [0,1,0],
+    #                            [0,0,1]])
+    bno = XSens(in_file='bno_data.txt', R_init=init_orient)
 
     print("Processed data!\n")
-    print("Test orientation:")
-    print(test_orient)
-    print(type(test_orient))
-
     print(bno.pos)
