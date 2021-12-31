@@ -34,18 +34,17 @@ last_sample = time.monotonic()
 while True:
     this_sample = time.monotonic()
     if(this_sample - last_sample >= frequency_intv):
-        print(f"Sample Time:{last_sample-this_sample}")
+        print(f"Sample Time:{this_sample-last_sample}")
         last_sample = this_sample
-        # print(f"Gyroscope Data:{sensor.gyro}")
-        # print(f"Accelerometer Data:{sensor.acceleration}")
+        print(f"Gyroscope Data:{sensor.gyro}")
+        print(f"Accelerometer Data:{sensor.acceleration}")
         # print(f"Magnetometer Data:{sensor.magnetic}")
         # print("Euler angle: {}".format(sensor.euler))
         #print("Quaternion: {}".format(sensor.quaternion))
-        #print("Linear acceleration (m/s^2): {}".format(sensor.linear_acceleration))
-        #print("Gravity (m/s^2): {}".format(sensor.gravity))
-        print(sensor.calibration_status)
+        print(f"Linear Acceleration (m/s^2):{sensor.linear_acceleration}")
+        print(f"Gravity (m/s^2):{sensor.gravity}")
+        print(f"Calibration Status:{sensor.calibration_status}")
         print()
-    
 
 """ Notes
 
