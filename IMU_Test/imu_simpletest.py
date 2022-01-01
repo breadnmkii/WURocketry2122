@@ -43,6 +43,7 @@ while True:
         #print("Quaternion: {}".format(sensor.quaternion))
         print(f"Linear Acceleration (m/s^2):{sensor.linear_acceleration}")
         print(f"Gravity (m/s^2):{sensor.gravity}")
+        print(f"Absolute Orientation: {sensor.quaternion.toEuler()}")
         print(f"Calibration Status:{sensor.calibration_status}")
         print()
 

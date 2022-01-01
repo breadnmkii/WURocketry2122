@@ -21,7 +21,7 @@ def main():
     lat, lon = 34.895444, -86.617000    # 38.649007,-90.310687     # Latitude, longitude
     maptype = 'satellite'               # Image type
     markers = ''                        # Optional image markers
-    max_mapsize = 1600                  # Max length of map (meters)
+    max_mapsize = 1524                  # Max length of map (meters)
     scale = 2                           # Resolution of image (max 2)
     zoom = 15                           # Zoom factor (optimal 15)
 
