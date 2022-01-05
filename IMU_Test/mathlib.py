@@ -1,3 +1,4 @@
+import math
 import numpy as np
 from numpy.linalg import norm
 import scipy.signal
@@ -101,3 +102,25 @@ def filtSignal(data, dt=0.01, wn=10, btype='lowpass', order=1):
         d = scipy.signal.filtfilt(n, s, d, axis=0)
         res.append(d)
     return res
+
+def quat_to_euler(w, x, y, z):
+        """
+        Convert a quaternion into euler angles (roll, pitch, yaw)
+        roll is rotation around x in radians (counterclockwise)
+        pitch is rotation around y in radians (counterclockwise)
+        yaw is rotation around z in radians (counterclockwise)
+        """
+        t0 = +2.0 * (w * x + y * z)
+        t1 = +1.0 - 2.0 * (x * x + y * y)
+        roll_x = math.atan2(t0, t1)
+     
+        t2 = +2.0 * (w * y - z * x)
+        t2 = +1.0 if t2 > +1.0 else t2
+        t2 = -1.0 if t2 < -1.0 else t2
+        pitch_y = math.asin(t2)
+     
+        t3 = +2.0 * (w * z + x * y)
+        t4 = +1.0 - 2.0 * (y * y + z * z)
+        yaw_z = math.atan2(t3, t4)
+     
+        return yaw_z, pitch_y, roll_x # in radians
