@@ -30,7 +30,7 @@ if __name__ == '__main__':
             #print("Quaternion: {}".format(sensor.quaternion))
             print(f"Linear Acceleration (m/s^2):{sensor.linear_acceleration}")
             print(f"Gravity (m/s^2):{sensor.gravity}")
-            print(f"Absolute Orientation: {mathlib.quat_to_euler(sensor.quaternion)}")
+            print(f"Absolute Orientation: {mathlib.quat_to_euler(*sensor.quaternion)}")
             print(f"Calibration Status:{sensor.calibration_status}")
             print()
 
