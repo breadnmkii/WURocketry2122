@@ -1,5 +1,6 @@
 import time
 import math
+import mathlib
 import numpy as np
 import pandas as pd
 import abc
@@ -79,9 +80,9 @@ if __name__ == '__main__':
         print(bno.calibration_status)
     print("Calibrated!")
 
-    # Initial orientation step (using magnetometer to get orientation from North)
-    deg_N = 0  # Degrees from North (when on launchpad)
-    init_orient = R.from_euler('zyx', [deg_N,90,0], degrees=True).as_matrix()   # Yaw, Pitch, Roll
+    # Initial orientation step (using quaternion)
+    
+    init_orient = R.from_euler('zyx', [deg_N,90,0], degrees=false).as_matrix()   # Yaw, Pitch, Roll
     print(type(init_orient))
     print(init_orient)
     # initial_orient = np.array([[1,0,0],
