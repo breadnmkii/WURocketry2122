@@ -33,6 +33,8 @@ if __name__ == '__main__':
             quat = sensor.quaternion
             if(quat[0] is None):
               continue
+            else:
+              quat[0] += 102
             print(f"Absolute Orientation: {mathlib.quat_to_euler(*quat)}")
             print(f"Calibration Status:{sensor.calibration_status}")
             print()
