@@ -81,12 +81,12 @@ if __name__ == '__main__':
     # Initial orientation step (using quaternion)
     print("3 seconds to align to North...!")
     time.sleep(3)
-    # init_orient = R.from_euler('zyx', [deg_N,90,0], degrees=false).as_matrix()   # Yaw, Pitch, Roll
+    # init_orient = R.from_euler('zyx', [deg_N,90,0], degrees=True).as_matrix()   # Yaw, Pitch, Roll
     quat = bno.quaternion                        # [w,x,y,z]   scalar first format
     formatted_quat = (*(quat[1:]), quat[0])
     print(formatted_quat)
-    init_orient = R.from_quat(formatted_quat)  # [x,y,z]+[w] scalar last format
-    print(init_orient.as_matrix())
+    init_orient = R.from_quat(formatted_quat).as_matrix()  # [x,y,z]+[w] scalar last format
+    print(init_orient)
 
     time.sleep(3)
     data = {"Acc_X":[],
@@ -104,7 +104,7 @@ if __name__ == '__main__':
         if(this_sample-last_sample >= (1/rate)):
             last_sample = this_sample
 
-            acc = bno.acceleration
+            acc = bno.linear_acceleration
             omg = bno.gyro
 
             # Guard against Nonetype reads
