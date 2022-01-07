@@ -63,8 +63,19 @@ class XSens(IMU_Base):
         self._set_data(in_data)
 
 
+def filter_noise(values, noise):
+    filtered = []
+    for value in acc:
+        if(value < noise):
+            filtered.append(0)
+        else:
+            filtered.append(value)
+    return filtered
+
+
 if __name__ == '__main__':
     samples = 1000
+    noise = 0.5
     count = 0
     rate = 100
     i2c = board.I2C()
@@ -110,6 +121,12 @@ if __name__ == '__main__':
             # Guard against Nonetype reads
             if(acc[0] is None or omg[0] is None):
                 continue
+            
+            print(acc)
+            # Noise filtering
+            acc = filter_noise(acc, noise)
+            omg = filter_noise(omg, noise)
+            print(acc)
 
             acc = list(map(lambda x: round(x, 6), acc))
             omg = list(map(lambda x: round(x, 6), omg))
