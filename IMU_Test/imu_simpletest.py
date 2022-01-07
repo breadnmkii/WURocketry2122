@@ -16,7 +16,7 @@ if __name__ == '__main__':
     sensor.mode = adafruit_bno055.IMUPLUS_MODE
     sensor.accel_range = adafruit_bno055.ACCEL_8G
 
-    frequency_intv = 1/50
+    frequency_intv = 1/10
     last_sample = time.monotonic()
     while True:
         this_sample = time.monotonic()
