@@ -72,32 +72,29 @@ if __name__ == '__main__':
     rate = 100
     i2c = board.I2C()
     bno = adafruit_bno055.BNO055_I2C(i2c)
-    # bno.mode = adafruit_bno055.IMUPLUS_MODE
+    bno.mode = adafruit_bno055.IMUPLUS_MODE
 
     # Calibration step
     print("Calibrating BNO055...")
-    while(bno.calibration_status != (3,3,3,3)):
+    while(bno.calibration_status[1] != 3 and bno.calibration_status[2] != 3):
         print(bno.calibration_status)
     print("Calibrated!")
 
     # Initial orientation step (using quaternion)
-    
-    init_orient = R.from_euler('zyx', [deg_N,90,0], degrees=false).as_matrix()   # Yaw, Pitch, Roll
-    print(type(init_orient))
+    print("3 seconds to align to North...!")
+    time.sleep(3)
+    # init_orient = R.from_euler('zyx', [deg_N,90,0], degrees=false).as_matrix()   # Yaw, Pitch, Roll
+    quat = bno.quaternion                        # [w,x,y,z]   scalar first format
+    init_orient = R.from_quat(quat[1:]+quat[0])  # [x,y,z]+[w] scalar last format
     print(init_orient)
-    # initial_orient = np.array([[1,0,0],
-    #                            [0,1,0],
-    #                            [0,0,1]])
 
     time.sleep(3)
-
     data = {"Acc_X":[],
             "Acc_Y":[],
             "Acc_Z":[],
             "Gyr_X":[],
             "Gyr_Y":[],
             "Gyr_Z":[]}
-    
     print("Collecting samples...")
 
     last_sample = time.monotonic()
