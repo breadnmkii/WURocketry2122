@@ -72,20 +72,21 @@ if __name__ == '__main__':
     bno.mode = adafruit_bno055.IMUPLUS_MODE
 
     # Calibration step
-    # print("Calibrating BNO055...")
-    # while(bno.calibration_status[1] != 3 or bno.calibration_status[2] != 3):
-    #     print(bno.calibration_status)
-    # print("Calibrated!")
-    # print(bno.calibration_status)
+    print("Calibrating BNO055...")
+    while(bno.calibration_status[1] != 3 or bno.calibration_status[2] != 3):
+        print(bno.calibration_status)
+    print("Calibrated!")
+    print(bno.calibration_status)
 
     # Initial orientation step (using quaternion)
     print("3 seconds to align to North...!")
     time.sleep(3)
     # init_orient = R.from_euler('zyx', [deg_N,90,0], degrees=false).as_matrix()   # Yaw, Pitch, Roll
     quat = bno.quaternion                        # [w,x,y,z]   scalar first format
-    print((quat[1:],quat[0]))
-    init_orient = R.from_quat(quat)  # [x,y,z]+[w] scalar last format
-    print(init_orient)
+    formatted_quat = (*(quat[1:]), quat[0])
+    print(formatted_quat)
+    init_orient = R.from_quat(formatted_quat)  # [x,y,z]+[w] scalar last format
+    print(init_orient.as_matrix())
 
     time.sleep(3)
     data = {"Acc_X":[],
