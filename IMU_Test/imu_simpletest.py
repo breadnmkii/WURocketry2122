@@ -27,7 +27,7 @@ if __name__ == '__main__':
             print(f"Accelerometer Data:{sensor.acceleration}")
             # print(f"Magnetometer Data:{sensor.magnetic}")
             # print("Euler angle: {}".format(sensor.euler))
-            #print("Quaternion: {}".format(sensor.quaternion))
+            print("Quaternion: {}".format(sensor.quaternion))
             print(f"Linear Acceleration (m/s^2):{sensor.linear_acceleration}")
             print(f"Gravity (m/s^2):{sensor.gravity}")
             quat = sensor.quaternion
