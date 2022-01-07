@@ -123,4 +123,4 @@ def quat_to_euler(w, x, y, z):
         t4 = +1.0 - 2.0 * (y * y + z * z)
         yaw_z = -math.atan2(t3, t4)*(180/math.pi)
      
-        return yaw_z+102, pitch_y, roll_x  # in degrees (add 102 for bno055 North offset)
+        return yaw_z, pitch_y, roll_x  # in degrees
