@@ -13,10 +13,10 @@ if __name__ == '__main__':
 
     # IMU Configuration
 
-    # sensor.mode = adafruit_bno055.IMUPLUS_MODE
+    sensor.mode = adafruit_bno055.IMUPLUS_MODE
     sensor.accel_range = adafruit_bno055.ACCEL_8G
 
-    frequency_intv = 1/10
+    frequency_intv = 1/100
     last_sample = time.monotonic()
     while True:
         this_sample = time.monotonic()
