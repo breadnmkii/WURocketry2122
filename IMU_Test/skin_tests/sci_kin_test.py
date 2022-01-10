@@ -95,67 +95,68 @@ if __name__ == '__main__':
     # Calibration step
     print("Calibrating BNO055...")
     while(bno.calibration_status[1] != 3 or bno.calibration_status[2] != 3):
-        print(bno.calibration_status)
+        pass
     print("Calibrated!")
     GPIO.output(18,GPIO.HIGH)   # Signal is calibrated
     time.sleep(3)
 
-    # init_orient = R.from_euler('zyx', [deg_N,90,0], degrees=True).as_matrix()   # Yaw, Pitch, Roll
-    quat = bno.quaternion                        # [w,x,y,z]   scalar first format
-    formatted_quat = (*(quat[1:]), quat[0])
-    print(formatted_quat)
-    init_orient = R.from_quat(formatted_quat).as_matrix()  # [x,y,z]+[w] scalar last format
-    print(init_orient)
+    while(input("Continue testing? (Y/n):").lower() == "y"):
+        # init_orient = R.from_euler('zyx', [deg_N,90,0], degrees=True).as_matrix()   # Yaw, Pitch, Roll
+        quat = bno.quaternion                        # [w,x,y,z]   scalar first format
+        formatted_quat = (*(quat[1:]), quat[0])
+        print(formatted_quat)
+        init_orient = R.from_quat(formatted_quat).as_matrix()  # [x,y,z]+[w] scalar last format
+        print(init_orient)
 
-    time.sleep(3)
-    data = {"Acc_X":[],
-            "Acc_Y":[],
-            "Acc_Z":[],
-            "Gyr_X":[],
-            "Gyr_Y":[],
-            "Gyr_Z":[]}
-    print("Collecting samples...")
+        time.sleep(3)
+        data = {"Acc_X":[],
+                "Acc_Y":[],
+                "Acc_Z":[],
+                "Gyr_X":[],
+                "Gyr_Y":[],
+                "Gyr_Z":[]}
+        print("Collecting samples...")
 
-    last_sample = time.monotonic()
-    while count < samples:
-        this_sample = time.monotonic()
+        last_sample = time.monotonic()
+        while count < samples:
+            this_sample = time.monotonic()
 
-        if(this_sample-last_sample >= (1/rate)):
-            last_sample = this_sample
+            if(this_sample-last_sample >= (1/rate)):
+                last_sample = this_sample
 
-            acc = bno.acceleration
-            omg = bno.gyro
+                acc = bno.linear_acceleration
+                omg = bno.gyro
 
-            # Guard against Nonetype reads
-            if(acc[0] is None or omg[0] is None):
-                continue
-            
-            # Noise filtering
-            acc = filter_noise(acc, noise)
-            omg = filter_noise(omg, noise)
+                # Guard against Nonetype reads
+                if(acc[0] is None or omg[0] is None):
+                    continue
+                
+                # Noise filtering
+                acc = filter_noise(acc, noise)
+                omg = filter_noise(omg, noise)
 
-            # Round values
-            acc = list(map(lambda x: round(x, 6), acc))
-            omg = list(map(lambda x: round(x, 6), omg))
+                # Round values
+                acc = list(map(lambda x: round(x, 6), acc))
+                omg = list(map(lambda x: round(x, 6), omg))
 
-            data["Acc_X"].append(acc[0])
-            data["Acc_Y"].append(acc[1])
-            data["Acc_Z"].append(acc[2])
-            data["Gyr_X"].append(omg[0])
-            data["Gyr_Y"].append(omg[1])
-            data["Gyr_Z"].append(omg[2])
+                data["Acc_X"].append(acc[0])
+                data["Acc_Y"].append(acc[1])
+                data["Acc_Z"].append(acc[2])
+                data["Gyr_X"].append(omg[0])
+                data["Gyr_Y"].append(omg[1])
+                data["Gyr_Z"].append(omg[2])
 
-            count += 1
-            
-    print("Finished collection!\n")
+                count += 1
+                
+        print("Finished collection!\n")
 
-    df = pd.DataFrame(data, index=None)
-    df.to_csv("bno_data.txt", index=None, sep="\t", mode="w")
-    
-    print("Wrote data!\n")
+        df = pd.DataFrame(data, index=None)
+        df.to_csv("bno_data.txt", index=None, sep="\t", mode="w")
+        
+        print("Wrote data!\n")
 
-    mySensor = XSens(in_file='bno_data.txt', R_init=init_orient)
+        mySensor = XSens(in_file='bno_data.txt', R_init=init_orient)
 
-    print("Processed data!\n")
-    print(mySensor.pos)
-    print(mySensor.quat)
+        print("Processed data!\n")
+        print(mySensor.pos)
+        print(mySensor.quat)
