@@ -125,7 +125,7 @@ if __name__ == '__main__':
             if(this_sample-last_sample >= (1/rate)):
                 last_sample = this_sample
 
-                acc = bno.linear_acceleration
+                acc = bno.acceleration
                 omg = bno.gyro
 
                 # Guard against Nonetype reads
