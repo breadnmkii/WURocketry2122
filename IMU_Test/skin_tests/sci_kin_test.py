@@ -84,6 +84,7 @@ if __name__ == '__main__':
     GPIO.setmode(GPIO.BCM)
     GPIO.setwarnings(False)
     GPIO.setup(18,GPIO.OUT)
+    GPIO.output(18,GPIO.LOW)
 
     # BNO Setup
     i2c = board.I2C()
