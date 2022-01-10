@@ -101,6 +101,7 @@ if __name__ == '__main__':
     time.sleep(3)
 
     while(input("Continue testing? (Y/n):").lower() == "y"):
+        count = 0
         # init_orient = R.from_euler('zyx', [deg_N,90,0], degrees=True).as_matrix()   # Yaw, Pitch, Roll
         quat = bno.quaternion                        # [w,x,y,z]   scalar first format
         formatted_quat = (*(quat[1:]), quat[0])
