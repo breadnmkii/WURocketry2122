@@ -8,6 +8,7 @@ import sys
 
 # Sensor
 import board
+import RPi.GPIO as GPIO
 import adafruit_bno055
 
 from skinematics.imus import IMU_Base
@@ -70,7 +71,7 @@ def filter_noise(values, noise):
             filtered.append(0)
         else:
             filtered.append(value)
-    return filtered
+    return tuple(filtered)
 
 
 if __name__ == '__main__':
@@ -78,20 +79,26 @@ if __name__ == '__main__':
     noise = 0.5
     count = 0
     rate = 100
+
+    # GPIO Setup (6th Top-right pin is GPIO18)
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setwarnings(False)
+    GPIO.setup(18,GPIO.OUT)
+
+    # BNO Setup
     i2c = board.I2C()
     bno = adafruit_bno055.BNO055_I2C(i2c)
     bno.mode = adafruit_bno055.IMUPLUS_MODE
+    bno.accel_range = adafruit_bno055.ACCEL_8G
 
     # Calibration step
     print("Calibrating BNO055...")
     while(bno.calibration_status[1] != 3 or bno.calibration_status[2] != 3):
         print(bno.calibration_status)
     print("Calibrated!")
-    print(bno.calibration_status)
-
-    # Initial orientation step (using quaternion)
-    print("3 seconds to align to North...!")
+    GPIO.output(18,GPIO.HIGH)   # Signal is calibrated
     time.sleep(3)
+
     # init_orient = R.from_euler('zyx', [deg_N,90,0], degrees=True).as_matrix()   # Yaw, Pitch, Roll
     quat = bno.quaternion                        # [w,x,y,z]   scalar first format
     formatted_quat = (*(quat[1:]), quat[0])
@@ -122,12 +129,11 @@ if __name__ == '__main__':
             if(acc[0] is None or omg[0] is None):
                 continue
             
-            print(acc)
             # Noise filtering
             acc = filter_noise(acc, noise)
             omg = filter_noise(omg, noise)
-            print(acc)
 
+            # Round values
             acc = list(map(lambda x: round(x, 6), acc))
             omg = list(map(lambda x: round(x, 6), omg))
 
@@ -147,7 +153,8 @@ if __name__ == '__main__':
     
     print("Wrote data!\n")
 
-    bno = XSens(in_file='bno_data.txt', R_init=init_orient)
+    mySensor = XSens(in_file='bno_data.txt', R_init=init_orient)
 
     print("Processed data!\n")
-    print(bno.pos)
+    print(mySensor.pos)
+    print(mySensor.quat)
