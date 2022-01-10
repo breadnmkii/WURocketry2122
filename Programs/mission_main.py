@@ -16,56 +16,6 @@ import adafruit_rfm9x
 import position as pos  # IMU tracking
 import grid             # Gridding
 
-""" Temporarily Disabled """
-# # Skinematics
-# from skinematics.imus import IMU_Base
-# import numpy as np
-# import pandas as pd
-
-"""
-class XSens(IMU_Base):    
-    def get_data(self, in_file, in_data=None):
-        '''Get the sampling rate, as well as the recorded data,
-        and assign them to the corresponding attributes of "self".
-        
-        Parameters
-        ----------
-        in_file : string
-                Filename of the data-file
-        in_data : not used here
-        
-        Assigns
-        -------
-        - rate : rate
-        - acc : acceleration
-        - omega : angular_velocity
-        - mag : mag_field_direction
-        '''
-        
-        # Get the sampling rate from the second line in the file
-        try:
-            fh = open(in_file)
-            fh.close()
-    
-        except FileNotFoundError:
-            print('{0} does not exist!'.format(in_file))
-            return -1
-
-        # Read the data
-        rate = 100.0    # in Hz
-        data = pd.read_csv(in_file,
-                           sep='\t',
-                           skiprows=4, 
-                           index_col=False)
-    
-        # Extract data from columns (Each in a 3-vector of x,y,z)
-        in_data = {'rate':rate,
-               'acc':   data.filter(regex='Acc').values,
-               'omega': data.filter(regex='Gyr').values,
-               'mag':   data.filter(regex='Mag').values}
-        self._set_data(in_data)
-"""
-
 def acquire_gps(gps):
     while not gps.has_fix:
         gps.update()
@@ -87,6 +37,7 @@ def setup_rf(spi, CS, RESET, FREQ):
 
         except RuntimeError as error:
             print('RFM9 ERR: Check wiring\n')
+
 
 def transmit_rf(rfm9x, string):
     tx_data = bytes(string, 'utf-8')
@@ -153,9 +104,6 @@ def main():
         "Gyr_X":[],
         "Gyr_Y":[],
         "Gyr_Z":[],
-        "Mag_X":[],
-        "Mag_Y":[],
-        "Mag_Z":[],
         "Quat_w":[],
         "Quat_x":[],
         "Quat_y":[],
