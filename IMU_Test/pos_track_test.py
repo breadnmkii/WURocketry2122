@@ -54,7 +54,7 @@ def main():
                     # Calculate velocity and displacement
                     t_vel = [sum(k) for k in zip(v0, map(lambda a: a/SAMPLE_RATE, t_acc))]
                     t_disp = [sum(k) for k in zip(x0, map(lambda v: v/SAMPLE_RATE, t_vel))]
-                    v0 = t_vel
+                    # v0 = t_vel
                     x0 = t_disp
 
                     # Record displacement
