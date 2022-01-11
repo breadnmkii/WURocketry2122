@@ -43,7 +43,7 @@ def main():
                     samples -= 1
                     
                     # Calculate rotation matrix
-                    r_mat = R.from_quat(*(quat[1:]), quat[0]).as_matrix()
+                    r_mat = R.from_quat((*(quat[1:]), quat[0])).as_matrix()
 
                     # Transform acceleration vector to initialized frame
                     t_acc = r_mat.dot(np.array(acc))
