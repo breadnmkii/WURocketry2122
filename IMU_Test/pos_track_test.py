@@ -52,8 +52,8 @@ def main():
                     # disp = map(lambda a: 0.5*a*(1/SAMPLE_RATE**2), t_acc)  # prob wrong
 
                     # Calculate velocity and displacement
-                    t_vel = v0 + map(lambda a: a/SAMPLE_RATE, t_acc)
-                    t_disp = x0 + map(lambda v: v/SAMPLE_RATE, t_vel)
+                    t_vel = (sum(k) for k in zip(v0, map(lambda a: a/SAMPLE_RATE, t_acc)))
+                    t_disp = (sum(k) for k in zip(x0, map(lambda v: v/SAMPLE_RATE, t_vel)))
                     v0 = t_vel
                     x0 = t_disp
 
