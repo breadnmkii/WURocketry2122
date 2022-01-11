@@ -67,10 +67,7 @@ class XSens(IMU_Base):
 def filter_noise(values, noise):
     filtered = []
     for value in acc:
-        if(value < noise):
-            filtered.append(0)
-        else:
-            filtered.append(value)
+        filtered.append(0) if (value < noise) else filtered.append(value)
     return tuple(filtered)
 
 
@@ -98,7 +95,6 @@ if __name__ == '__main__':
         pass
     print("Calibrated!")
     GPIO.output(18,GPIO.HIGH)   # Signal is calibrated
-    time.sleep(3)
 
     while(input("Continue testing? (Y/n):").lower() == "y"):
         count = 0
