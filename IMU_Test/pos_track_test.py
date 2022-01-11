@@ -59,6 +59,9 @@ def main():
 
                     # Record displacement
                     np.append(calc_pos, t_disp)
+                    print(t_disp)
+                    print(type(t_disp))
+                    print(calc_pos)
 
         print("Calculated positions")
         print(calc_pos)
