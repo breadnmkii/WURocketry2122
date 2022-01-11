@@ -39,11 +39,10 @@ def main():
                 quat = bno.quaternion
 
                 # Guard against Nonetype reads
-                if(acc[0] is not None):
+                if(acc[0] is not None and quat[0] is not None):
                     samples -= 1
                     
                     # Calculate rotation matrix
-                    print(f"Zero norm quat?: {quat}")
                     r_mat = R.from_quat((*(quat[1:]), quat[0])).as_matrix()
 
                     # Transform acceleration vector to initialized frame
