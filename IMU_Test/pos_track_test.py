@@ -51,7 +51,8 @@ def main():
                     t_acc = r_mat.dot(np.array(acc))
 
                     # Record acceleration
-                    np.append(vals_acc, np.array(t_acc)[np.newaxis], axis=0)
+                    vals_acc = np.append(vals_acc, np.array(t_acc)[np.newaxis], axis=0)
+
         print(vals_acc)
         # Calculate vel and disp (cumulative trapezoidal integration)            
         print("Calculating position...")
