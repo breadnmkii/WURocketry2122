@@ -24,13 +24,13 @@ def main():
     while(input("Continue testing? (Y/n):").lower() == "y"):
         print("Collecting samples...")
 
-        vals_acc = np.array([])
+        vals_acc = np.array([0,0,0])[np.newaxis]
 
         samples = SAMPLES
         last_sample = time.monotonic()
         v0 = (0,0,0)
         x0 = (0,0,0)
-        times = []          # Time steps
+        times = [0]          # Time steps
 
         while samples > 0:
             this_sample = time.monotonic()
@@ -52,10 +52,8 @@ def main():
                     # Transform acceleration vector to initialized frame
                     t_acc = r_mat.dot(np.array(acc))
 
-                    print(t_acc)
-
                     # Record acceleration
-                    np.append(vals_acc, t_acc[np.newaxis], axis=0)
+                    np.append(vals_acc, np.array(t_acc)[np.newaxis], axis=0)
         print(t_acc)
         # Calculate vel and disp (cumulative trapezoidal integration)            
         print("Calculating position...")
