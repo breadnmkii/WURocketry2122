@@ -52,6 +52,8 @@ def main():
                     # Transform acceleration vector to initialized frame
                     t_acc = r_mat.dot(np.array(acc))
 
+                    print(t_acc)
+
                     # Record acceleration
                     np.append(vals_acc, t_acc[np.newaxis], axis=0)
         print(t_acc)
