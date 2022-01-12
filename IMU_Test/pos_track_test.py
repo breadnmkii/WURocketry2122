@@ -58,7 +58,7 @@ def main():
         # Calculate vel and disp (cumulative trapezoidal integration)            
         print("Calculating position...")
         calc_vel = map(lambda acc_arr: it.cumtrapz(acc_arr, times, initial=0), t_acc.T)
-        calc_pos = map(lambda vel_arr: it.cumtrapz(vel_arr, times, initial=0), calc_vel)
+        calc_pos = np.array(map(lambda vel_arr: it.cumtrapz(vel_arr, times, initial=0), calc_vel)).T
 
         print("Calculated positions")
         print(calc_pos)
