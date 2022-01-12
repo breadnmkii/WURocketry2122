@@ -28,7 +28,7 @@ def main():
 
         count = 0
         last_sample = time.monotonic()
-        times = []          # Time steps
+        times = [0]          # Time steps
 
         while count < SAMPLES:
             this_sample = time.monotonic()
