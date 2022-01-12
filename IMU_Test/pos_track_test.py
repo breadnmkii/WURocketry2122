@@ -52,7 +52,7 @@ def main():
 
                     # Record acceleration
                     np.append(vals_acc, np.array(t_acc)[np.newaxis], axis=0)
-        print(t_acc)
+                    
         # Calculate vel and disp (cumulative trapezoidal integration)            
         print("Calculating position...")
         calc_vel = map(lambda acc_arr: it.cumtrapz(acc_arr, times, initial=0), t_acc.T)
