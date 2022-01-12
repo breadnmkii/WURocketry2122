@@ -42,7 +42,6 @@ def main():
 
                 # Guard against Nonetype reads
                 if(acc[0] is not None and quat[0] is not None):
-                    times.append(count/SAMPLE_RATE)
                     
                     # Calculate rotation matrix
                     r_mat = R.from_quat((*(quat[1:]), quat[0])).as_matrix()
@@ -50,10 +49,12 @@ def main():
                     # Transform acceleration vector to initialized frame
                     t_acc = r_mat.dot(np.array(acc))
 
-                    # Record acceleration
+                    # Record acceleration and time
                     vals_acc = np.append(vals_acc, np.array(t_acc)[np.newaxis], axis=0)
-
-        print(vals_acc)
+                    times.append(count/SAMPLE_RATE)
+        print(times)
+        print(f"vals_acc shape:{np.shape(vals_acc)}")
+        print(f"times len:{len(times)}")
         # Calculate vel and disp (cumulative trapezoidal integration)            
         print("Calculating position...")
         calc_vel = map(lambda acc_arr: it.cumtrapz(acc_arr, times, initial=0), vals_acc.T)
