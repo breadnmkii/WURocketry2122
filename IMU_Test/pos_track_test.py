@@ -52,7 +52,7 @@ def main():
                     # Record acceleration and time
                     vals_acc = np.append(vals_acc, np.array(t_acc)[np.newaxis], axis=0)
                     times.append(count/SAMPLE_RATE)
-        print(times)
+
         print(f"vals_acc shape:{np.shape(vals_acc)}")
         print(f"times len:{len(times)}")
         # Calculate vel and disp (cumulative trapezoidal integration)            
