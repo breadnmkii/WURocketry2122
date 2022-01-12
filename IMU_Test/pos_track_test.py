@@ -31,10 +31,10 @@ def main():
         times = []          # Time steps
 
         while count < SAMPLES:
-            count += 1
             this_sample = time.monotonic()
 
             if(this_sample-last_sample >= (1/SAMPLE_RATE)):
+                count += 1
                 last_sample = this_sample
 
                 acc = bno.linear_acceleration   # m/s^2
