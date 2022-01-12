@@ -16,10 +16,10 @@ bno.accel_range = adafruit_bno055.ACCEL_8G
 
 def main():
     # Calibration step
-    # print("Calibrating BNO055...")
-    # while(bno.calibration_status[1] != 3 or bno.calibration_status[2] != 3):
-    #     pass
-    # print("Calibrated!")
+    print("Calibrating BNO055...")
+    while(bno.calibration_status[1] != 3 or bno.calibration_status[2] != 3):
+        pass
+    print("Calibrated!")
 
     while(input("Continue testing? (Y/n):").lower() == "y"):
         print("Collecting samples...")
