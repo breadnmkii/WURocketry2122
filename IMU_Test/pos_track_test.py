@@ -2,7 +2,9 @@ import time
 import numpy as np
 import board
 import adafruit_bno055
+import scipy.integrate as it
 from scipy.spatial.transform import Rotation as R
+
 
 SAMPLES = 1000
 SAMPLE_RATE = 100
@@ -22,12 +24,13 @@ def main():
     while(input("Continue testing? (Y/n):").lower() == "y"):
         print("Collecting samples...")
 
-        calc_pos = np.array([])
+        vals_acc = np.array([])
 
         samples = SAMPLES
         last_sample = time.monotonic()
         v0 = (0,0,0)
         x0 = (0,0,0)
+        times = []          # Time steps
 
         while samples > 0:
             this_sample = time.monotonic()
@@ -37,6 +40,7 @@ def main():
 
                 acc = bno.linear_acceleration   # m/s^2
                 quat = bno.quaternion
+                times.append(1/SAMPLE_RATE)
 
                 # Guard against Nonetype reads
                 if(acc[0] is not None and quat[0] is not None):
@@ -48,18 +52,13 @@ def main():
                     # Transform acceleration vector to initialized frame
                     t_acc = r_mat.dot(np.array(acc))
 
-                    # Double integrate wrt sampling rate to calculate displacement
-                    # disp = map(lambda a: 0.5*a*(1/SAMPLE_RATE**2), t_acc)  # prob wrong
-
-                    # Calculate velocity and displacement
-                    t_vel = [sum(k) for k in zip(v0, map(lambda a: a/SAMPLE_RATE, t_acc))]
-                    t_disp = [sum(k) for k in zip(x0, map(lambda v: v/SAMPLE_RATE, t_vel))]
-                    # v0 = t_vel
-                    x0 = t_disp
-
-                    # Record displacement
-                    np.append(calc_pos, np.array(t_disp))
-                    print(t_disp)
+                    # Record acceleration
+                    np.append(vals_acc, t_acc[np.newaxis], axis=0)
+        print(t_acc)
+        # Calculate vel and disp (cumulative trapezoidal integration)            
+        print("Calculating position...")
+        calc_vel = map(lambda acc_arr: it.cumtrapz(acc_arr, times, initial=0), t_acc.T)
+        calc_pos = map(lambda vel_arr: it.cumtrapz(vel_arr, times, initial=0), calc_vel)
 
         print("Calculated positions")
         print(calc_pos)
