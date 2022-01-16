@@ -70,7 +70,7 @@ def main():
 
 def filter_noise(values, noise):
     filtered = []
-    for value in acc:
+    for value in values:
         filtered.append(0) if (value < noise) else filtered.append(value)
     return tuple(filtered)
 
