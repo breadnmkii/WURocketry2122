@@ -5,7 +5,7 @@ import adafruit_bno055
 import scipy.integrate as it
 from scipy.spatial.transform import Rotation as R
 
-
+NOISE = 0.5
 SAMPLES = 1000
 SAMPLE_RATE = 100
 
@@ -42,7 +42,9 @@ def main():
 
                 # Guard against Nonetype reads
                 if(acc[0] is not None and quat[0] is not None):
-                    
+                    # Filter noise
+                    acc = filter_noise(acc, NOISE)
+
                     # Calculate rotation matrix
                     r_mat = R.from_quat((*(quat[1:]), quat[0])).as_matrix()
 
@@ -62,6 +64,13 @@ def main():
 
         print("Calculated positions")
         print(calc_pos)
+
+
+def filter_noise(values, noise):
+    filtered = []
+    for value in acc:
+        filtered.append(0) if (value < noise) else filtered.append(value)
+    return tuple(filtered)
 
 
 if __name__ == '__main__':
