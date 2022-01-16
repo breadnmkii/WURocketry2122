@@ -44,12 +44,14 @@ def main():
                 if(acc[0] is not None and quat[0] is not None):
                     # Filter noise
                     acc = filter_noise(acc, NOISE)
+                    print(f"acc:{acc}")
 
                     # Calculate rotation matrix
                     r_mat = R.from_quat((*(quat[1:]), quat[0])).as_matrix()
 
                     # Transform acceleration vector to initialized frame
                     t_acc = r_mat.dot(np.array(acc))
+                    print(f"tcc:{t_acc}")
 
                     # Record acceleration and time
                     vals_acc = np.append(vals_acc, np.array(t_acc)[np.newaxis], axis=0)
