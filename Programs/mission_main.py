@@ -1,4 +1,4 @@
-# Main file for tracking program
+import os
 import time
 import datetime
 
@@ -23,6 +23,8 @@ def acquire_gps(gps):
 
 
 def average_window(list, window):
+    if(not list):
+        return 0
     return sum(map(lambda acc: abs(acc), list[-window:]))/window
 
 
@@ -57,6 +59,7 @@ def main():
     # IMU
     imu = adafruit_bno055.BNO055_I2C(i2c)
     imu.mode = adafruit_bno055.IMUPLUS_MODE     # NO MAGNETOMETER MODE
+    imu.accel_range = adafruit_bno055.ACCEL_16G
 
     # RF
     FREQ = 433.0
@@ -65,8 +68,7 @@ def main():
     spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
     rfm9x = setup_rf(spi, CS, RESET, FREQ)
 
-    transmit_rf(rfm9x, "SETUP: DONE\n")
-
+    # TODO: get gps coord on launch
     # Initial GPS acquisition routine
     print("Acquiring GPS fix...")
     LAUNCH_COORD = acquire_gps(gps)
@@ -74,15 +76,19 @@ def main():
     print(f"Acquired: {LAUNCH_COORD}")
     transmit_rf(rfm9x, f"LAUNCH_COORD: {LAUNCH_COORD}\n")
     
+    # IMU calibration routine
+    print("Calibrating IMU...")
+    while(imu.calibration_status[1] != 3 or imu.calibration_status[2] != 3):
+        pass
+    print("Calibrated!")
 
-    # Two dimensional vectors
+    # Declarations
     current_coord = LAUNCH_COORD
     current_grid = (0,0)
     expected_grid = (0,0)
     
-    ### Post-Process Position Tracking ###
-    last_sample = time.time()
-    frequency = 1/100                # (in seconds)
+    time_lastSample = time.time()
+    FREQUENCY = 1/100                # (in seconds)
 
     hasLaunched = False              # Boolean that indicates initial rapid acceleration was detected (launched)
     hasLanded   = False              # Boolean that indicates no acceleration IF hasLaunched is true  (landed)
@@ -93,8 +99,8 @@ def main():
     ACC_WINDOW = 50                  # Range of values to apply rolling average in 'acc_accumulator'
     MIN_IMU_TIME = 0.5               # (seconds) Minimum time IMU should collect data to prevent immediate landing event detection
     MOTION_SENSITIVITY = 3           # Amount of 3-axis acceleration needed to be read to trigger "movement" detection
-    MOTION_LAUNCH_SENSITIVITY = 14.7 # Amount of accel added to offset for stronger initial launch accel
-    LANDED_COUNT = 10*(1/frequency)  # Number of cycles needed to be exceeded to mark as landed
+    MOTION_LAUNCH_SENSITIVITY = 10 # Amount of accel added to offset for stronger initial launch accel
+    LANDED_COUNT = 10*(1/FREQUENCY)  # Number of cycles needed to be exceeded to mark as landed
 
     # Dictionary for IMU sensor readings
     data = {"Counter":[],
@@ -109,76 +115,58 @@ def main():
         "Quat_y":[],
         "Quat_z":[]}
 
-    data_f = open("files/vehicle_blackbox.txt", "w+")
+    # File IO setup
+    PATH_BLACKBOX = "files/blackbox.log"
+    if(not os.path.isfile(f"{PATH_BLACKBOX}")):
+        open(f"{PATH_BLACKBOX}")
+    data_f = open(f"{PATH_BLACKBOX}", "w+")
 
-    # Loop continously checks whether vehicle has launched
+    transmit_rf(rfm9x, "SETUP: DONE\nWAIT: LAUNCH\n")
+
+    ### PRE-LAUNCH STANDBY ###
     print("Waiting for launch...")
-    transmit_rf(rfm9x, "WAIT: LAUNCH\n")
     while(not hasLaunched):
-        this_sample = time.time()
-        if(this_sample - last_sample >= frequency):
-            last_sample = this_sample
-            lin_accel = imu.linear_acceleration
+        time_thisSample = time.time()
+        if(time_thisSample - time_lastSample >= FREQUENCY):
+            time_lastSample = time_thisSample
+            acc = imu.linear_acceleration
 
             # Guard against None values
-            if(not lin_accel[0]):
-                continue
-            acc_accumulator.append(sum(lin_accel))
-        
+            if(acc[0]):
+                acc_accumulator.append(sum(acc))
+            
         # Take average of latest 'ACC_WINDOW' elements of 'acc_accumulator' and check if above movement_threshold
         if(average_window(acc_accumulator, ACC_WINDOW) > MOTION_SENSITIVITY + MOTION_LAUNCH_SENSITIVITY):
             print("Launch detected!")
             hasLaunched = True
             break
-    transmit_rf(rfm9x, "EVENT: LAUNCH\n")
 
+    transmit_rf(rfm9x, "EVENT: LAUNCH\nWAIT: LANDING\n")
+
+    ### IN-FLIGHT DATA COLLECTION ###
     print("Watiting for landing...")
-    transmit_rf(rfm9x, "WAIT: LANDING\n")
     acc_accumulator.clear()
-    launch_time = time.time()       # Marks time at launch
-    last_sample = launch_time       # Reset delta timing
+    time_launchStart = time.time()  # Marks time at launch
+    time_lastSample = time.time()   # Reset delta timing
 
-    # Loop continuously gathers IMU data between hasLaunched and hasLanded
     while(not hasLanded):
-        this_sample = time.time()
+        time_thisSample = time.time()
 
-        if(this_sample - last_sample >= frequency):
-            last_sample = this_sample
-            lin_accel = imu.linear_acceleration
-
-            if(lin_accel[0]):
-                acc_accumulator.append(sum(lin_accel))
+        if(time_thisSample - time_lastSample >= FREQUENCY):
+            time_lastSample = time_thisSample
 
             acc = imu.linear_acceleration
-            omg = imu.gyro
-            mag = imu.magnetic
             qua = imu.quaternion
 
-            if(omg[0] is None or acc[0] is None or mag[0] is None or qua[0] is None):
-                continue
+            if(acc[0] is not None and qua[0] is not None):
+                acc_accumulator.append(sum(acc))
+                data_f.write(f"ACC_X: {acc[0]}\tACC_Y: {acc[1]}\tACC_Z: {acc[2]}\n")
 
-            # data["Counter"].append(len(acc_accumulator))
-            # data["Acc_X"].append(acc[0])
-            # data["Acc_Y"].append(acc[1])
-            # data["Acc_Z"].append(acc[2])
-            # data["Gyr_X"].append(omg[0])
-            # data["Gyr_Y"].append(omg[1])
-            # data["Gyr_Z"].append(omg[2])
-            # data["Mag_X"].append(mag[0])
-            # data["Mag_Y"].append(mag[1])
-            # data["Mag_Z"].append(mag[2])
-            # data["Qua_W"].append(qua[0])
-            # data["Qua_X"].append(qua[1])
-            # data["Qua_Y"].append(qua[2])
-            # data["Qua_Z"].append(qua[3])
-            
-            transmit_rf(rfm9x, f"\n{datetime.datetime.now()}\n")
-            transmit_rf(rfm9x, f"ACC_X: {acc[0]}\tACC_Y: {acc[1]}\tACC_Z: {acc[2]}\n")
-            transmit_rf(rfm9x, f"GYR_X: {omg[0]}\tGYR_Y: {omg[1]}\tGYR_Z: {omg[2]}\n")
-            data_f.write(f"ACC_X: {acc[0]}\tACC_Y: {acc[1]}\tACC_Z: {acc[2]}\n")
+                # transmit_rf(rfm9x, f"\n{datetime.datetime.now()}\n")
+                # transmit_rf(rfm9x, f"ACC_X: {acc[0]}\tACC_Y: {acc[1]}\tACC_Z: {acc[2]}\n")
 
             # Check after some duration post launch for no motion (below movement_threshold)
-            if((this_sample - launch_time >= MIN_IMU_TIME) and average_window(acc_accumulator, ACC_WINDOW) < MOTION_SENSITIVITY):
+            if((time_thisSample - time_launchStart >= MIN_IMU_TIME) and average_window(acc_accumulator, ACC_WINDOW) < MOTION_SENSITIVITY):
                 motionless_count += 1
             else:
                 motionless_count = 0    # Reset on motion detection
@@ -186,22 +174,14 @@ def main():
 
             if(motionless_count >= LANDED_COUNT):
                 print("Landing detected!")
-                print(f"Launch duration:{this_sample-launch_time}")
+                print(f"Launch duration:{time_thisSample-time_launchStart}")
                 hasLanded = True
                 break
+
     transmit_rf(rfm9x, "EVENT: LANDING\n")
     
-    """ Temporarily Disabled Library """
-    # # Format data to file
-    # print("Processing data...\n")
-    # df = pd.DataFrame(data, index=None)
-    # with open("files/data.txt", "w") as file:
-    #     file.write("// Start Time: 0\n// Sample rate: 100.0Hz\n// Scenario: 4.9\n// Firmware Version: 2.5.1\n")
-    # df.to_csv("data.txt", index=None, sep="\t", mode="a")
-
-    # # Process data with skinematics
-    # bno = XSens(in_file='data.txt')
-    # final_position = bno.pos    # FIXME: Write np array
+    ### POST-FLIGHT CALCULATION ###
+    # Calculate final position
     final_position = (100,100)
 
     # Calculate grid number

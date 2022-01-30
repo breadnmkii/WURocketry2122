@@ -12,7 +12,7 @@ SAMPLE_RATE = 100
 i2c = board.I2C()
 bno = adafruit_bno055.BNO055_I2C(i2c)
 bno.mode = adafruit_bno055.IMUPLUS_MODE
-bno.accel_range = adafruit_bno055.ACCEL_8G
+bno.accel_range = adafruit_bno055.ACCEL_16G
 
 def main():
     # Calibration step

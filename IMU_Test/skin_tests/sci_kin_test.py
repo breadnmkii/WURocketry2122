@@ -129,8 +129,8 @@ if __name__ == '__main__':
                     continue
                 
                 # Noise filtering
-                acc = filter_noise(acc, noise)
-                omg = filter_noise(omg, noise)
+                # acc = filter_noise(acc, noise)
+                # omg = filter_noise(omg, noise)
 
                 # Round values
                 acc = list(map(lambda x: round(x, 6), acc))
@@ -153,7 +153,7 @@ if __name__ == '__main__':
         print("Wrote data!\n")
 
         mySensor = XSens(in_file='bno_data.txt', R_init=init_orient)
-
+        print(mySensor.calc_position())
         print("Processed data!\n")
         print(mySensor.pos)
         print(mySensor.quat)
