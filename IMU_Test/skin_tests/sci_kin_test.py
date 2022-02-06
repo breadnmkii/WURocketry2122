@@ -125,7 +125,7 @@ if __name__ == '__main__':
                 omg = bno.gyro
 
                 # Guard against Nonetype reads
-                if(acc[0] is None or omg[0] is None):
+                if(None in acc or None in omg[0]):
                     continue
                 
                 # Noise filtering

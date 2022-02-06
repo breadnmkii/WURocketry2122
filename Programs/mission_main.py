@@ -5,7 +5,14 @@ import datetime
 # Board
 import board
 import busio
+import RPi.GPIO as GPIO
 from digitalio import DigitalInOut
+
+# GPIO Setup (6th Top-right pin is GPIO18)
+GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(False)
+GPIO.setup(18,GPIO.OUT)
+GPIO.output(18,GPIO.LOW)
 
 # Adafruit libraries
 import adafruit_gps
@@ -21,12 +28,16 @@ def acquire_gps(gps):
         gps.update()
     return (gps.latitude, gps.longitude)
 
+def calibrate_imu(imu):
+    while(imu.calibration_status[1] != 3 or imu.calibration_status[2] != 3):
+            pass
+    GPIO.output(18,GPIO.HIGH)   # Signal is calibrated
+    
 
 def average_window(list, window):
     if(not list):
         return 0
     return sum(map(lambda acc: abs(acc), list[-window:]))/window
-
 
 def setup_rf(spi, CS, RESET, FREQ):
     while True:
@@ -40,7 +51,6 @@ def setup_rf(spi, CS, RESET, FREQ):
         except RuntimeError as error:
             print('RFM9 ERR: Check wiring\n')
 
-
 def transmit_rf(rfm9x, string):
     tx_data = bytes(string, 'utf-8')
     rfm9x.send(tx_data)
@@ -48,7 +58,6 @@ def transmit_rf(rfm9x, string):
 
 # Main payload routine
 def main():
-    """ Peripheral Setup """
     i2c = board.I2C()
 
     # GPS
@@ -68,25 +77,21 @@ def main():
     spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
     rfm9x = setup_rf(spi, CS, RESET, FREQ)
 
-    # TODO: get gps coord on launch
+
+
     # Initial GPS acquisition routine
     print("Acquiring GPS fix...")
-    LAUNCH_COORD = acquire_gps(gps)
-    # LAUNCH_COORD = (38.663484, -90.365707)    # Debug test coordinate
-    print(f"Acquired: {LAUNCH_COORD}")
-    transmit_rf(rfm9x, f"LAUNCH_COORD: {LAUNCH_COORD}\n")
+    acquire_gps(gps)
+    print(f"Acquired.")
     
     # IMU calibration routine
     print("Calibrating IMU...")
-    while(imu.calibration_status[1] != 3 or imu.calibration_status[2] != 3):
-        pass
+    calibrate_imu(imu)
     print("Calibrated!")
 
+
+
     # Declarations
-    current_coord = LAUNCH_COORD
-    current_grid = (0,0)
-    expected_grid = (0,0)
-    
     time_lastSample = time.time()
     FREQUENCY = 1/100                # (in seconds)
 
@@ -102,18 +107,22 @@ def main():
     MOTION_LAUNCH_SENSITIVITY = 10 # Amount of accel added to offset for stronger initial launch accel
     LANDED_COUNT = 10*(1/FREQUENCY)  # Number of cycles needed to be exceeded to mark as landed
 
-    # Dictionary for IMU sensor readings
-    data = {"Counter":[],
-        "Acc_X":[],
-        "Acc_Y":[],
-        "Acc_Z":[],
-        "Gyr_X":[],
-        "Gyr_Y":[],
-        "Gyr_Z":[],
-        "Quat_w":[],
-        "Quat_x":[],
-        "Quat_y":[],
-        "Quat_z":[]}
+    # # Dictionary for IMU sensor readings
+    # data = {"Counter":[],
+    #     "Acc_X":[],
+    #     "Acc_Y":[],
+    #     "Acc_Z":[],
+    #     "Gyr_X":[],
+    #     "Gyr_Y":[],
+    #     "Gyr_Z":[],
+    #     "Quat_w":[],
+    #     "Quat_x":[],
+    #     "Quat_y":[],
+    #     "Quat_z":[]}
+
+    acc_data = []   # 2d array
+    qua_data = []   # 2d array
+    time_data = []  # 1d array
 
     # File IO setup
     PATH_BLACKBOX = "files/blackbox.log"
@@ -122,6 +131,8 @@ def main():
     data_f = open(f"{PATH_BLACKBOX}", "w+")
 
     transmit_rf(rfm9x, "SETUP: DONE\nWAIT: LAUNCH\n")
+
+
 
     ### PRE-LAUNCH STANDBY ###
     print("Waiting for launch...")
@@ -138,10 +149,17 @@ def main():
         # Take average of latest 'ACC_WINDOW' elements of 'acc_accumulator' and check if above movement_threshold
         if(average_window(acc_accumulator, ACC_WINDOW) > MOTION_SENSITIVITY + MOTION_LAUNCH_SENSITIVITY):
             print("Launch detected!")
+            LAUNCH_COORD = acquire_gps(gps)
+            current_coord = LAUNCH_COORD
+            current_grid = (0,0)
+            expected_grid = (0,0)
             hasLaunched = True
             break
 
+    transmit_rf(rfm9x, f"LAUNCH_COORD: {LAUNCH_COORD}\n")
     transmit_rf(rfm9x, "EVENT: LAUNCH\nWAIT: LANDING\n")
+
+
 
     ### IN-FLIGHT DATA COLLECTION ###
     print("Watiting for landing...")
@@ -158,12 +176,17 @@ def main():
             acc = imu.linear_acceleration
             qua = imu.quaternion
 
+            # Blackbox recording (ACCx,y,z QUAx,y,z)
+            data_f.write(f"{acc[0]}\t{acc[1]}\t{acc[2]}\t")
+            data_f.write(f"{qua[0]}\t{qua[1]}\t{qua[2]}\n")
+
+            # Data recording
+            acc_data.append(acc)
+            qua_data.append(qua)
+            time_data.append(time_thisSample-time_launchStart)
+
             if(acc[0] is not None and qua[0] is not None):
                 acc_accumulator.append(sum(acc))
-                data_f.write(f"ACC_X: {acc[0]}\tACC_Y: {acc[1]}\tACC_Z: {acc[2]}\n")
-
-                # transmit_rf(rfm9x, f"\n{datetime.datetime.now()}\n")
-                # transmit_rf(rfm9x, f"ACC_X: {acc[0]}\tACC_Y: {acc[1]}\tACC_Z: {acc[2]}\n")
 
             # Check after some duration post launch for no motion (below movement_threshold)
             if((time_thisSample - time_launchStart >= MIN_IMU_TIME) and average_window(acc_accumulator, ACC_WINDOW) < MOTION_SENSITIVITY):
@@ -180,9 +203,18 @@ def main():
 
     transmit_rf(rfm9x, "EVENT: LANDING\n")
     
+
+
     ### POST-FLIGHT CALCULATION ###
     # Calculate final position
-    final_position = (100,100)
+    # Notes: Uses post processing of data
+    # 1. replace any NONE readings with average of points in between
+    # 2. assert no NONE values exist in data
+    # 3. feed data into post_track.py
+    # 4. read last value of pos data
+    # 5. feed pos data into grid.py
+    # 6. obtain final values,
+    final_position = pos.acc_to_pos(acc_data, qua_data, time_data)
 
     # Calculate grid number
     grid_num = grid.dist_to_grid(final_position)

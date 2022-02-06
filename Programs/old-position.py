@@ -25,7 +25,7 @@ sensor = adafruit_bno055.BNO055_I2C(i2c)
 
 class IMUTracker:
 
-    def __init__(self, sampling, data_order={'w': 1, 'a': 2, 'm': 3}):
+    def __init__(self, sampling, data_order={'w': 1, 'a': 2}):
         '''
         @param sampling: sampling rate of the IMU, in Hz
         @param tinit: initialization time where the device is expected to be stay still, in second
@@ -39,12 +39,12 @@ class IMUTracker:
         self.data_order = data_order
 
         # ---- helpers ----
-        idx = {1: [0, 3], 2: [3, 6], 3: [6, 9]}
+        idx = {1: [0, 3], 2: [3, 6]}
         self._widx = idx[data_order['w']]
         self._aidx = idx[data_order['a']]
-        self._midx = idx[data_order['m']]
+      #  self._midx = idx[data_order['m']]
 
-    def initialize(self, data, noise_coefficient={'w': 100, 'a': 100, 'm': 10}):
+    def initialize(self, data, noise_coefficient={'w': 100, 'a': 100}):
         '''
         Algorithm initialization
         
@@ -56,10 +56,11 @@ class IMUTracker:
         (gn, g0, mn, gyro_noise, gyro_bias, acc_noise, mag_noise)
         '''
 
-        # Grab w,a,m data sections from data
+        # discard the first few readings
+        # for some reason they might fluctuate a lot
         w = data[:, self._widx[0]:self._widx[1]]
         a = data[:, self._aidx[0]:self._aidx[1]]
-        m = data[:, self._midx[0]:self._midx[1]]
+     #   m = data[:, self._midx[0]:self._midx[1]]
 
         # ---- gravity ----
         gn = -a.mean(axis=0)
@@ -68,24 +69,24 @@ class IMUTracker:
         g0 = np.linalg.norm(gn)
 
         # ---- magnetic field ----
-        mn = m.mean(axis=0)
+    #    mn = m.mean(axis=0)
         # magnitude is not important
-        mn = normalized(mn)[:, np.newaxis]
+    #    mn = normalized(mn)[:, np.newaxis]
 
         # ---- compute noise covariance ----
         avar = a.var(axis=0)
         wvar = w.var(axis=0)
-        mvar = m.var(axis=0)
+    #    mvar = m.var(axis=0)
         print('acc var: %s, norm: %s' % (avar, np.linalg.norm(avar)))
         print('ang var: %s, norm: %s' % (wvar, np.linalg.norm(wvar)))
-        print('mag var: %s, norm: %s' % (mvar, np.linalg.norm(mvar)))
+    #    print('mag var: %s, norm: %s' % (mvar, np.linalg.norm(mvar)))
 
         # ---- define sensor noise ----
         gyro_noise = noise_coefficient['w'] * np.linalg.norm(wvar)
         gyro_bias = w.mean(axis=0)
         acc_noise = noise_coefficient['a'] * np.linalg.norm(avar)
-        mag_noise = noise_coefficient['m'] * np.linalg.norm(mvar)
-        return (gn, g0, mn, gyro_noise, gyro_bias, acc_noise, mag_noise)
+     #   mag_noise = noise_coefficient['m'] * np.linalg.norm(mvar)
+        return (gn, g0, gyro_noise, gyro_bias, acc_noise)
 
     def attitudeTrack(self, data, init_list):
         '''
@@ -102,10 +103,10 @@ class IMUTracker:
         # ------------------------------- #
         # ---- Initialization ----
         # ------------------------------- #
-        gn, g0, mn, gyro_noise, gyro_bias, acc_noise, mag_noise = init_list
+        gn, g0, gyro_noise, gyro_bias, acc_noise= init_list
         w = data[:, self._widx[0]:self._widx[1]] - gyro_bias
         a = data[:, self._aidx[0]:self._aidx[1]]
-        m = data[:, self._midx[0]:self._midx[1]]
+     #   m = data[:, self._midx[0]:self._midx[1]]
         sample_number = np.shape(data)[0]
 
         # ---- data container ----
@@ -134,7 +135,7 @@ class IMUTracker:
 
             wt = w[t, np.newaxis].T
             at = a[t, np.newaxis].T
-            mt = normalized(m[t, np.newaxis].T)
+         #   mt = normalized(m[t, np.newaxis].T)
 
             # ------------------------------- #
             # ---- 1. Propagation ----
@@ -155,25 +156,25 @@ class IMUTracker:
 
             # ---- acc and mag prediction ----
             pa = normalized(-rotate(q) @ gn)
-            pm = normalized(rotate(q) @ mn)
+         #   pm = normalized(rotate(q) @ mn)
 
             # ---- residual ----
-            Eps = np.vstack((normalized(at), mt)) - np.vstack((pa, pm))
+       #     Eps = np.vstack((normalized(at), mt)) - np.vstack((pa, pm))
 
             # ---- sensor noise ----
             # R = internal error + external error
             Ra = [(acc_noise / np.linalg.norm(at))**2 + (1 - g0 / np.linalg.norm(at))**2] * 3
-            Rm = [mag_noise**2] * 3
-            R = np.diag(Ra + Rm)
+        #    Rm = [mag_noise**2] * 3
+         #   R = np.diag(Ra + Rm)
 
             # ---- kalman gain ----
-            Ht = H(q, gn, mn)
-            S = Ht @ P @ Ht.T + R
-            K = P @ Ht.T @ np.linalg.inv(S)
+       #     Ht = H(q, gn, mn)
+         #   S = Ht @ P @ Ht.T + R
+         #   K = P @ Ht.T @ np.linalg.inv(S)
 
             # ---- actual update ----
-            q = q + K @ Eps
-            P = P - K @ Ht @ P
+         #   q = q + K @ Eps
+         #   P = P - K @ Ht @ P
 
             # ------------------------------- #
             # ---- 3. Post Correction ----
