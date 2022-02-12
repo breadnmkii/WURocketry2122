@@ -32,7 +32,6 @@ def calibrate_imu(imu):
     while(imu.calibration_status[1] != 3 or imu.calibration_status[2] != 3):
             pass
     GPIO.output(18,GPIO.HIGH)   # Signal is calibrated
-    
 
 def average_window(list, window):
     if(not list):
@@ -90,7 +89,6 @@ def main():
     print("Calibrated!")
 
 
-
     # Declarations
     time_lastSample = time.time()
     FREQUENCY = 1/100                # (in seconds)
@@ -104,7 +102,7 @@ def main():
     ACC_WINDOW = 50                  # Range of values to apply rolling average in 'acc_accumulator'
     MIN_IMU_TIME = 0.5               # (seconds) Minimum time IMU should collect data to prevent immediate landing event detection
     MOTION_SENSITIVITY = 3           # Amount of 3-axis acceleration needed to be read to trigger "movement" detection
-    MOTION_LAUNCH_SENSITIVITY = 10 # Amount of accel added to offset for stronger initial launch accel
+    MOTION_LAUNCH_SENSITIVITY = 10   # Amount of accel added to offset for stronger initial launch accel
     LANDED_COUNT = 10*(1/FREQUENCY)  # Number of cycles needed to be exceeded to mark as landed
 
     # # Dictionary for IMU sensor readings
