@@ -102,7 +102,7 @@ def main():
     ACC_WINDOW = 50                  # Range of values to apply rolling average in 'acc_accumulator'
     MIN_IMU_TIME = 0.5               # (seconds) Minimum time IMU should collect data to prevent immediate landing event detection
     MOTION_SENSITIVITY = 3           # Amount of 3-axis acceleration needed to be read to trigger "movement" detection
-    MOTION_LAUNCH_SENSITIVITY = 7   # Amount of accel added to offset for stronger initial launch accel
+    MOTION_LAUNCH_SENSITIVITY = 12   # Amount of accel added to offset for stronger initial launch accel
     LANDED_COUNT = 10*(1/FREQUENCY)  # Number of cycles needed to be exceeded to mark as landed
 
     acc_data = []   # 2d array
@@ -110,10 +110,10 @@ def main():
     time_data = []  # 1d array
 
     # File IO setup
-    PATH_BLACKBOX = "./files/blackbox.log"
+    PATH_BLACKBOX = "blackbox.log"
     if(not os.path.isfile(f"{PATH_BLACKBOX}")):
         data_f = open(f"{PATH_BLACKBOX}", "w+")
-    data_f = open(f"{PATH_BLACKBOX}", "w")
+    data_f = open(f"{PATH_BLACKBOX}", "w+")
 
     transmit_rf(rfm9x, "SETUP")
 
