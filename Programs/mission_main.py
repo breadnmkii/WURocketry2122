@@ -110,9 +110,9 @@ def main():
     time_data = []  # 1d array
 
     # File IO setup
-    PATH_BLACKBOX = "files/blackbox.log"
+    PATH_BLACKBOX = "./files/blackbox.log"
     if(not os.path.isfile(f"{PATH_BLACKBOX}")):
-        open(f"{PATH_BLACKBOX}", "w+")
+        data_f = open(f"{PATH_BLACKBOX}", "w+")
     data_f = open(f"{PATH_BLACKBOX}", "w")
 
     transmit_rf(rfm9x, "SETUP")
