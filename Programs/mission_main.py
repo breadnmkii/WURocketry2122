@@ -32,7 +32,6 @@ def calibrate_imu(imu):
     while(imu.calibration_status[1] != 3 or imu.calibration_status[2] != 3):
             pass
     GPIO.output(18,GPIO.HIGH)   # Signal is calibrated
-    
 
 def average_window(list, window):
     if(not list):
@@ -90,7 +89,6 @@ def main():
     print("Calibrated!")
 
 
-
     # Declarations
     time_lastSample = time.time()
     FREQUENCY = 1/100                # (in seconds)
@@ -104,33 +102,20 @@ def main():
     ACC_WINDOW = 50                  # Range of values to apply rolling average in 'acc_accumulator'
     MIN_IMU_TIME = 0.5               # (seconds) Minimum time IMU should collect data to prevent immediate landing event detection
     MOTION_SENSITIVITY = 3           # Amount of 3-axis acceleration needed to be read to trigger "movement" detection
-    MOTION_LAUNCH_SENSITIVITY = 10 # Amount of accel added to offset for stronger initial launch accel
+    MOTION_LAUNCH_SENSITIVITY = 12   # Amount of accel added to offset for stronger initial launch accel
     LANDED_COUNT = 10*(1/FREQUENCY)  # Number of cycles needed to be exceeded to mark as landed
-
-    # # Dictionary for IMU sensor readings
-    # data = {"Counter":[],
-    #     "Acc_X":[],
-    #     "Acc_Y":[],
-    #     "Acc_Z":[],
-    #     "Gyr_X":[],
-    #     "Gyr_Y":[],
-    #     "Gyr_Z":[],
-    #     "Quat_w":[],
-    #     "Quat_x":[],
-    #     "Quat_y":[],
-    #     "Quat_z":[]}
 
     acc_data = []   # 2d array
     qua_data = []   # 2d array
     time_data = []  # 1d array
 
     # File IO setup
-    PATH_BLACKBOX = "files/blackbox.log"
+    PATH_BLACKBOX = "blackbox.log"
     if(not os.path.isfile(f"{PATH_BLACKBOX}")):
-        open(f"{PATH_BLACKBOX}")
+        data_f = open(f"{PATH_BLACKBOX}", "w+")
     data_f = open(f"{PATH_BLACKBOX}", "w+")
 
-    transmit_rf(rfm9x, "SETUP: DONE\nWAIT: LAUNCH\n")
+    transmit_rf(rfm9x, "SETUP")
 
 
 
@@ -156,8 +141,7 @@ def main():
             hasLaunched = True
             break
 
-    transmit_rf(rfm9x, f"LAUNCH_COORD: {LAUNCH_COORD}\n")
-    transmit_rf(rfm9x, "EVENT: LAUNCH\nWAIT: LANDING\n")
+    transmit_rf(rfm9x, "LAUNCH")
 
 
 
@@ -177,13 +161,15 @@ def main():
             qua = imu.quaternion
 
             # Blackbox recording (ACCx,y,z QUAx,y,z)
+            data_f.write(f"{time_thisSample-time_launchStart}")
             data_f.write(f"{acc[0]}\t{acc[1]}\t{acc[2]}\t")
             data_f.write(f"{qua[0]}\t{qua[1]}\t{qua[2]}\n")
 
             # Data recording
+            time_data.append(time_thisSample-time_launchStart)
             acc_data.append(acc)
             qua_data.append(qua)
-            time_data.append(time_thisSample-time_launchStart)
+            
 
             if(acc[0] is not None and qua[0] is not None):
                 acc_accumulator.append(sum(acc))
@@ -201,8 +187,8 @@ def main():
                 hasLanded = True
                 break
 
-    transmit_rf(rfm9x, "EVENT: LANDING\n")
-    
+    transmit_rf(rfm9x, "LANDED\n")
+    data_f.close()
 
 
     ### POST-FLIGHT CALCULATION ###
