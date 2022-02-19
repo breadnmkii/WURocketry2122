@@ -122,7 +122,6 @@ def main():
     ### PRE-LAUNCH STANDBY ###
     print("Waiting for launch...")
     while(not hasLaunched):
-        print(average_window(acc_accumulator, ACC_WINDOW))
         time_thisSample = time.time()
         if(time_thisSample - time_lastSample >= FREQUENCY):
             time_lastSample = time_thisSample
@@ -159,7 +158,7 @@ def main():
 
             acc = imu.linear_acceleration
             qua = imu.quaternion
-            print(average_window(acc_accumulator, ACC_WINDOW))
+
             # Blackbox recording (ACCx,y,z QUAx,y,z)
             data_f.write(f"{time_thisSample-time_launchStart}")
             data_f.write(f"{acc[0]}\t{acc[1]}\t{acc[2]}\t")

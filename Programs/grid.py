@@ -46,7 +46,7 @@ def coord_to_feet(coord):
 # 1. Calculates grid coordinate from (0,0)
 # 2. Translates grid coordinate from (0,0) into grid number (i.e. (0,0) -> #220)
 def dist_to_grid(launch_disp):
-    grid_coord = (map(lambda i: math.ceil(math.floor(2*i/GRID_LEN)/2), launch_disp))
+    grid_coord = tuple(map(lambda i: math.ceil(math.floor(2*i/GRID_LEN)/2), launch_disp))
     return GRID_CEN - (grid_coord[0]*GRID_ITV) + grid_coord[1]
 
 
