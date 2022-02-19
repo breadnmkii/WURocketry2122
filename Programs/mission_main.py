@@ -84,7 +84,7 @@ def main():
 
     # Attempt GPS acquisition routine
     print("Acquiring GPS fix...")
-    acquire_gps(gps, 50000)
+    acquire_gps(gps, 100)
     print(f"Acquired.")
     
     # IMU calibration routine
@@ -138,7 +138,7 @@ def main():
         # Take average of latest 'ACC_WINDOW' elements of 'acc_accumulator' and check if above movement_threshold
         if(average_window(acc_accumulator, ACC_WINDOW) > MOTION_SENSITIVITY + MOTION_LAUNCH_SENSITIVITY):
             print("Launch detected!")
-            LAUNCH_COORD = acquire_gps(gps, 500)
+            LAUNCH_COORD = acquire_gps(gps, 10)
             current_coord = LAUNCH_COORD
             current_grid = (0,0)
             expected_grid = (0,0)
