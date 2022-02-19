@@ -23,9 +23,13 @@ import adafruit_rfm9x
 import position as pos  # IMU tracking
 import grid             # Gridding
 
-def acquire_gps(gps):
+def acquire_gps(gps, timeout):
+    timecount = 0
     while not gps.has_fix:
         gps.update()
+        timecount += 1
+        if(timecount >= timeout):
+            return (0,0)
     return (gps.latitude, gps.longitude)
 
 def calibrate_imu(imu):
@@ -78,9 +82,9 @@ def main():
 
 
 
-    # Initial GPS acquisition routine
+    # Attempt GPS acquisition routine
     print("Acquiring GPS fix...")
-    acquire_gps(gps)
+    acquire_gps(gps, 50000)
     print(f"Acquired.")
     
     # IMU calibration routine
@@ -134,7 +138,7 @@ def main():
         # Take average of latest 'ACC_WINDOW' elements of 'acc_accumulator' and check if above movement_threshold
         if(average_window(acc_accumulator, ACC_WINDOW) > MOTION_SENSITIVITY + MOTION_LAUNCH_SENSITIVITY):
             print("Launch detected!")
-            LAUNCH_COORD = acquire_gps(gps)
+            LAUNCH_COORD = acquire_gps(gps, 500)
             current_coord = LAUNCH_COORD
             current_grid = (0,0)
             expected_grid = (0,0)
@@ -172,13 +176,11 @@ def main():
 
             if(acc[0] is not None and qua[0] is not None):
                 acc_accumulator.append(sum(acc))
-            print(motionless_count)
             # Check after some duration post launch for no motion (below movement_threshold)
             if((time_thisSample - time_launchStart >= MIN_IMU_TIME) and average_window(acc_accumulator, ACC_WINDOW) < MOTION_SENSITIVITY):
                 motionless_count += 1
             else:
                 motionless_count = 0    # Reset on motion detection
-            print(f'{motionless_count}\n')
 
             if(motionless_count >= LANDED_COUNT):
                 print("Landing detected!")
