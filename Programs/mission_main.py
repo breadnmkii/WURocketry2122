@@ -30,7 +30,7 @@ def acquire_gps(gps):
 
 def calibrate_imu(imu):
     while(imu.calibration_status[1] != 3 or imu.calibration_status[2] != 3):
-            pass
+        pass
     GPIO.output(18,GPIO.HIGH)   # Signal is calibrated
 
 def average_window(list, window):
@@ -87,7 +87,7 @@ def main():
     print("Calibrating IMU...")
     calibrate_imu(imu)
     print("Calibrated!")
-
+    
 
     # Declarations
     time_lastSample = time.time()
@@ -144,21 +144,20 @@ def main():
     transmit_rf(rfm9x, "LAUNCH")
 
 
-
     ### IN-FLIGHT DATA COLLECTION ###
     print("Watiting for landing...")
     acc_accumulator.clear()
     time_launchStart = time.time()  # Marks time at launch
     time_lastSample = time.time()   # Reset delta timing
 
-    while(not hasLanded):
+    for i in range(0,50):
         time_thisSample = time.time()
 
         if(time_thisSample - time_lastSample >= FREQUENCY):
             time_lastSample = time_thisSample
 
-            acc = imu.linear_acceleration
-            qua = imu.quaternion
+            acc = (1,1,1) #imu.linear_acceleration
+            qua = (0,0,0,1) #imu.quaternion
 
             # Blackbox recording (ACCx,y,z QUAx,y,z)
             data_f.write(f"{time_thisSample-time_launchStart}")
@@ -173,7 +172,7 @@ def main():
 
             if(acc[0] is not None and qua[0] is not None):
                 acc_accumulator.append(sum(acc))
-
+            print(motionless_count)
             # Check after some duration post launch for no motion (below movement_threshold)
             if((time_thisSample - time_launchStart >= MIN_IMU_TIME) and average_window(acc_accumulator, ACC_WINDOW) < MOTION_SENSITIVITY):
                 motionless_count += 1
@@ -187,9 +186,8 @@ def main():
                 hasLanded = True
                 break
 
-    transmit_rf(rfm9x, "LANDED\n")
+    # transmit_rf(rfm9x, "LANDED\n")
     data_f.close()
-
 
     ### POST-FLIGHT CALCULATION ###
     # Calculate final position
@@ -208,17 +206,16 @@ def main():
     
     # Save data
     print("Saved data to file!")
-    with open("files/grid_number.txt", "w") as file:
+    with open("grid_number.txt", "w+") as file:
         file.write(str_grid)
     
-    with open("files/final_position.txt", "w") as file:
+    with open("final_position.txt", "w+") as file:
         file.write(final_position)
 
     # Transmit data
     print("Send signal loop...")
     while True:
         transmit_rf(rfm9x, f"KEY:{str_grid}")
-
 
 if __name__ == '__main__':
     main()
