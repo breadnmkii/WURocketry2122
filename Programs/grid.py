@@ -1,18 +1,14 @@
 # External file for providing essential grid position functionality
 
-# NOTE: Area: 5000x5000(ft^2), Grid: 250x250 (ft^2)
-# TODO: GPS to grid algo
-#       1. Get actual start,end gps coords
-#       2. Get difference (actual - ideal) and correct actual coords
-#       3. Get difference (end - start)
-#       4. Convert to N/S, E/W distance measurements (meters)
-#       5. Assuming our launchpad @ (0,0), convert our distances to grid based on grid length (76.2 m)
+# NOTE:
+# Area: 5000x5000(ft^2), Grid: 250x250 (ft^2)
+# Center (0,0), -> is +x,  ^ is +y
 # Latitude: N (+), S (-)    Longitude: E (+), W(-)
 # Latitude = y-axis         Longitude = x-axis
-# So coordinates in form of (y,x)
+# Coordinates in form of (y,x)
+
 import math
 from decimal import *
-
 
 # Configuration & Constants
 getcontext().prec = 7
@@ -23,58 +19,40 @@ IDEAL_COORD = (Decimal('38.663484'),Decimal('-90.365707'))  # The expected (lat,
 EARTH_CIRCUMFERENCE = 24901     # (miles)
 LAT_DEGREE          = 364000    # (feet)
 LON_DEGREE          = 288200    # (feet)
+MAP_LEN             = 5000      # (feet)
+GRID_LEN            = 250       # (feet)
+GRID_CEN            = 220       # (center grid_num)
+GRID_ITV            = (MAP_LEN/GRID_LEN)+1    # Number of grid squares across either axis of map (21 squares)
 
+# from LAND_COORD to IDEAL_COORD calculate x,y dist
+#     above == below
+# from LAUNCH_COORD to IDEAL_COORD calculate x,y dist
+# add to IMU x,y dist
 
+# calculate grid num from summed x,y dist from 0,0 center
 
-## Function to convert coordinates from launch into launch distance
-def coord_to_dist(launch_coord, current_coord):
-    # coord_correction = (Decimal(f'{launch_coord[0]}') - Decimal(f'{IDEAL_COORD[0]}'), 
-    #                     Decimal(f'{launch_coord[1]}') - Decimal(f'{IDEAL_COORD[1]}'))
-
+## Function to convert two coordinantes A->B to distance
+def coord_to_dist(coord_A, coord_B):
     return coord_to_feet((
-        Decimal(f'{current_coord[0]}') - Decimal(f'{IDEAL_COORD[0]}'), # + coord_correction[0],
-        Decimal(f'{current_coord[1]}') - Decimal(f'{IDEAL_COORD[1]}')))  #+ coord_correction[1]))
-
+        Decimal(f'{coord_B[0]}') - Decimal(f'{coord_A[0]}'),
+        Decimal(f'{coord_B[1]}') - Decimal(f'{coord_A[1]}')))
+## Helper function to convert two coordinates' degrees difference to feet
 def coord_to_feet(coord):
     return ((Decimal(f'{coord[0]}')*Decimal(f'{LAT_DEGREE}')),
             (Decimal(f'{coord[1]}')*Decimal(f'{LON_DEGREE}')))
 
-## Function to map launch distance to a grid number     NOTE: Center (0,0), -> is +x,  ^ is +y
-# Assuming origin grid (0,0) is at center of map, then divide displacement vector components by grid length (250ft) and 
-# apply ceiling to determine number of grids along x and y axis we are in
+## Function to map launch distance to a grid number
+# Distance passed should be total distance (either GPS or calculated) from origin (0,0 -> grid 220 center)
+# 1. Calculates grid coordinate from (0,0)
+# 2. Translates grid coordinate from (0,0) into grid number (i.e. (0,0) -> #220)
 def dist_to_grid(launch_disp):
-    x_grid = math.ceil((launch_disp[1])/250)
-    y_grid = math.ceil((launch_disp[0])/250)
-
-    return (x_grid, y_grid)
+    grid_coord = (map(lambda i: math.ceil(math.floor(2*i/GRID_LEN)/2), launch_disp))
+    return GRID_CEN - (grid_coord[0]*GRID_ITV) + grid_coord[1]
 
 
 
 
 
-""" DEPRECATED FUNCTIONS """
-'''
-## Function to integrate change in 3D linear acceleration vector into 3D velocity vector
-# Note: linear acceleration measurement ignores acceleration due to gravity
-# Step 1. 1-D velocity
-# Step 2. 2-d velocity + change in orientation
-# Step 3. enjoy dealing with 3d space
-def integrate_laccel(time_intv, delta_laccel):
-    displacement = list(map(lambda a: (0.5)*a*(time_intv**2), delta_laccel)) 
-    return displacement
-
-### OLD
-# Maps a lambda function to add current displacement vector with current velocity vector
-# def update_disp(current_disp, current_vel):
-#    return tuple(map(lambda x: x[0] + x[1], zip(current_disp, current_vel)))
-
-### DO we need this? should we just multiply current velocity vector by time to get
-# ## Function to integrate change in 3D velocity vector into 3D displacement vector
-# # Step 1. 1-D displacement
-# # Step 2. 2-d displacement
-# def integrate_veloc(t0, tf, delta_veloc):
-#     return map(lambda a: (0.5)*a*(tf**2-t0**2), delta_veloc)
-'''
 
 ## Test Script
 def main():
