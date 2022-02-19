@@ -102,7 +102,7 @@ def main():
     ACC_WINDOW = 50                  # Range of values to apply rolling average in 'acc_accumulator'
     MIN_IMU_TIME = 0.5               # (seconds) Minimum time IMU should collect data to prevent immediate landing event detection
     MOTION_SENSITIVITY = 3           # Amount of 3-axis acceleration needed to be read to trigger "movement" detection
-    MOTION_LAUNCH_SENSITIVITY = 12   # Amount of accel added to offset for stronger initial launch accel
+    MOTION_LAUNCH_SENSITIVITY = 13   # Amount of accel added to offset for stronger initial launch accel
     LANDED_COUNT = 10*(1/FREQUENCY)  # Number of cycles needed to be exceeded to mark as landed
 
     acc_data = []   # 2d array
@@ -122,6 +122,7 @@ def main():
     ### PRE-LAUNCH STANDBY ###
     print("Waiting for launch...")
     while(not hasLaunched):
+        print(average_window(acc_accumulator, ACC_WINDOW))
         time_thisSample = time.time()
         if(time_thisSample - time_lastSample >= FREQUENCY):
             time_lastSample = time_thisSample
@@ -140,7 +141,7 @@ def main():
             expected_grid = (0,0)
             hasLaunched = True
             break
-
+    
     transmit_rf(rfm9x, "LAUNCH")
 
 
@@ -150,15 +151,15 @@ def main():
     time_launchStart = time.time()  # Marks time at launch
     time_lastSample = time.time()   # Reset delta timing
 
-    for i in range(0,50):
+    while(not hasLanded):
         time_thisSample = time.time()
 
         if(time_thisSample - time_lastSample >= FREQUENCY):
             time_lastSample = time_thisSample
 
-            acc = (1,1,1) #imu.linear_acceleration
-            qua = (0,0,0,1) #imu.quaternion
-
+            acc = imu.linear_acceleration
+            qua = imu.quaternion
+            print(average_window(acc_accumulator, ACC_WINDOW))
             # Blackbox recording (ACCx,y,z QUAx,y,z)
             data_f.write(f"{time_thisSample-time_launchStart}")
             data_f.write(f"{acc[0]}\t{acc[1]}\t{acc[2]}\t")
