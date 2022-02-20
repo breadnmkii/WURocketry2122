@@ -29,7 +29,9 @@ def acquire_gps(gps, timeout):
         gps.update()
         timecount += 1
         if(timecount >= timeout):
-            return (0,0)
+            print(f"Did not acquire. Retry if necessary.")
+            return None
+    print(f"Acquired.")
     return (gps.latitude, gps.longitude)
 
 def calibrate_imu(imu):
@@ -85,7 +87,6 @@ def main():
     # Attempt GPS acquisition routine
     print("Acquiring GPS fix...")
     acquire_gps(gps, 100)
-    print(f"Acquired.")
     
     # IMU calibration routine
     print("Calibrating IMU...")
@@ -106,7 +107,7 @@ def main():
     ACC_WINDOW = 50                  # Range of values to apply rolling average in 'acc_accumulator'
     MIN_IMU_TIME = 0.5               # (seconds) Minimum time IMU should collect data to prevent immediate landing event detection
     MOTION_SENSITIVITY = 3           # Amount of 3-axis acceleration needed to be read to trigger "movement" detection
-    MOTION_LAUNCH_SENSITIVITY = 3 # DEBUG: 13   # Amount of accel added to offset for stronger initial launch accel
+    MOTION_LAUNCH_SENSITIVITY = 13   # Amount of accel added to offset for stronger initial launch accel
     LANDED_COUNT = 10*(1/FREQUENCY)  # Number of cycles needed to be exceeded to mark as landed
 
     acc_data = []   # 2d array
@@ -213,7 +214,7 @@ def main():
     
     with open("final_position.txt", "w+") as file:
         file.write(f"{position_matrix[-1][0]},{position_matrix[-1][1]}")
-    
+
     # Transmit data
     print("Send signal loop...")
     while True:
