@@ -18,7 +18,7 @@ def main():
     ### Config
     filename = "pyra-grid"
     grid_itv = 76.2                     # Grid space intervals (meters)
-    lat, lon = 34.895444, -86.617000    # 38.649007,-90.310687     # Latitude, longitude
+    lat, lon = 38.64871999597565, -90.30274973493445 #34.895444, -86.617000    # 38.649007,-90.310687     # Latitude, longitude
     maptype = 'satellite'               # Image type
     markers = ''                        # Optional image markers
     max_mapsize = 1524                  # Max length of map (meters)

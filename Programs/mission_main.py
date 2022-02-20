@@ -106,7 +106,7 @@ def main():
     ACC_WINDOW = 50                  # Range of values to apply rolling average in 'acc_accumulator'
     MIN_IMU_TIME = 0.5               # (seconds) Minimum time IMU should collect data to prevent immediate landing event detection
     MOTION_SENSITIVITY = 3           # Amount of 3-axis acceleration needed to be read to trigger "movement" detection
-    MOTION_LAUNCH_SENSITIVITY = 13   # Amount of accel added to offset for stronger initial launch accel
+    MOTION_LAUNCH_SENSITIVITY = 3 # DEBUG: 13   # Amount of accel added to offset for stronger initial launch accel
     LANDED_COUNT = 10*(1/FREQUENCY)  # Number of cycles needed to be exceeded to mark as landed
 
     acc_data = []   # 2d array
@@ -204,15 +204,15 @@ def main():
 
     # Calculate grid number
     grid_num = grid.dist_to_grid(final_position[-1])
-    str_grid = f'{grid_num[0]},{grid_num[1]}\r\n'
+    str_grid = f'{grid_num}\r\n'
     
     # Save data
     print("Saved data to file!")
     with open("grid_number.txt", "w+") as file:
         file.write(str_grid)
     
-    with open("final_position.txt", "w+") as file:
-        file.write(final_position)
+    # with open("final_position.txt", "w+") as file:
+    #     file.write(str(final_position[-1]))
 
     # Transmit data
     print("Send signal loop...")
