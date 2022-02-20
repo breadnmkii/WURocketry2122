@@ -203,7 +203,7 @@ def main():
     final_position = pos.acc_to_pos(acc_data, qua_data, time_data)
 
     # Calculate grid number
-    grid_num = grid.dist_to_grid(final_position)
+    grid_num = grid.dist_to_grid(final_position[-1])
     str_grid = f'{grid_num[0]},{grid_num[1]}\r\n'
     
     # Save data
