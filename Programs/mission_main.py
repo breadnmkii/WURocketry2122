@@ -166,7 +166,7 @@ def main():
             # Blackbox recording (ACCx,y,z QUAx,y,z)
             data_f.write(f"{time_thisSample-time_launchStart}")
             data_f.write(f"{acc[0]}\t{acc[1]}\t{acc[2]}\t")
-            data_f.write(f"{qua[0]}\t{qua[1]}\t{qua[2]}\n")
+            data_f.write(f"{qua[0]}\t{qua[1]}\t{qua[2]}\t{qua[3]}\n")
 
             # Data recording
             time_data.append(time_thisSample-time_launchStart)
@@ -200,10 +200,10 @@ def main():
     # 4. read last value of pos data
     # 5. feed pos data into grid.py
     # 6. obtain final values,
-    final_position = pos.acc_to_pos(acc_data, qua_data, time_data)
+    position_matrix = pos.acc_to_pos(acc_data, qua_data, time_data)
 
     # Calculate grid number
-    grid_num = grid.dist_to_grid(final_position[-1])
+    grid_num = grid.dist_to_grid(position_matrix[-1])
     str_grid = f'{grid_num}\r\n'
     
     # Save data
@@ -211,9 +211,9 @@ def main():
     with open("grid_number.txt", "w+") as file:
         file.write(str_grid)
     
-    # with open("final_position.txt", "w+") as file:
-    #     file.write(str(final_position[-1]))
-
+    with open("final_position.txt", "w+") as file:
+        file.write(f"{position_matrix[-1][0]},{position_matrix[-1][1]}")
+    
     # Transmit data
     print("Send signal loop...")
     while True:

@@ -14,22 +14,23 @@ from decimal import *
 getcontext().prec = 7
 
 ## OFFICIAL NASA COORDINATES: (34.895444, -86.617000)  some farm in alabama
+## TEST COORDINATES: 38.64871999597565, -90.30274973493445
 
-IDEAL_COORD = (Decimal('38.648719'),Decimal('-90.302749'))  # The expected (lat,lon) coords, obtainted from our imager.py image
+IDEAL_COORD = (Decimal('38.648719'),Decimal('-90.302749'))  ## MODIFY THIS # The expected (lat,lon) coords, obtainted from our imager.py image
 EARTH_CIRCUMFERENCE = 24901     # (miles)
 LAT_DEGREE          = 364000    # (feet)
 LON_DEGREE          = 288200    # (feet)
 MAP_LEN             = 5000      # (feet)
 GRID_LEN            = 250       # (feet)
-GRID_CEN            = 190       # (center grid_num)
+GRID_CEN            = 190       # (center grid_num)         ## MODIFY THIS
 GRID_ITV            = (MAP_LEN/GRID_LEN)+1    # Number of grid squares across either axis of map (21 squares)
 
-# from LAND_COORD to IDEAL_COORD calculate x,y dist
+# from LAND_COORD to IDEAL_COORD calculate y,x dist
 #     above == below
-# from LAUNCH_COORD to IDEAL_COORD calculate x,y dist
-# add to IMU x,y dist
+# from LAUNCH_COORD to IDEAL_COORD calculate y,x dist
+# add to IMU y,x dist
 
-# calculate grid num from summed x,y dist from 0,0 center
+# calculate grid num from summed y,x dist from 0,0 center
 
 ## Function to convert two coordinantes A->B to distance
 def coord_to_dist(coord_A, coord_B):
