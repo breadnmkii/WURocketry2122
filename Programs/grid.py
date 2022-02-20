@@ -57,7 +57,14 @@ def dist_to_grid(launch_disp):
 ## Test Script
 def main():
     launch_coord = (38.663484, -90.365707)
-    current_coord = (38.663568, -90.366002)
+    current_coord = (38.663050, -90.366002)
+    imu_dist = (0,0)
+
+    launch_diff = coord_to_dist(current_coord, IDEAL_COORD)
+    abs_dist = (imu_dist[0]+launch_diff[0], imu_dist[1]+launch_diff[1])
+
+    print(abs_dist)
+    print(dist_to_grid(abs_dist))
 
 if __name__=='__main__':
     main()
