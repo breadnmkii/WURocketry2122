@@ -41,10 +41,9 @@ while True:
         
         while True:
             # TX
-            tx_data = bytes(f'{datetime.datetime.now()}\r\n', 'utf-8')
+            tx_data = bytes(f'{time.time_ns()}\r\n', 'utf-8')
             rfm9x.send(tx_data)
-            print(f'Sent {tx_data}')
-            time.sleep(3)
+            print(f'Sent -> {tx_data}')
     
     except RuntimeError as error:
         print('Error in setting up RFM9x... check wiring.')

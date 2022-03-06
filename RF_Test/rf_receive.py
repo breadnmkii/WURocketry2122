@@ -44,13 +44,11 @@ while True:
         while True:
             # RX
             rx_packet = rfm9x.receive()
-            if rx_packet is None:
-                print('Fail!')
-            else:
+            if rx_packet:
+                receive_time = time.time_ns()
                 rx_data = str(rx_packet, "utf-8")
-                f.write(f"{rx_data}\n")
-                print(f'Succ: {rx_data}')
-            time.sleep(0.1)
+                f.write(f'{receive_time} <- {rx_data}\n')
+                print(f'{receive_time} <- {rx_data}')
 
     except RuntimeError as err:
         print("Error setting up, check wiring")

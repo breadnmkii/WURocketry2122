@@ -11,7 +11,11 @@ from digitalio import DigitalInOut
 # GPIO Setup (6th Top-right pin is GPIO18)
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
+GPIO.setup(17,GPIO.OUT)
 GPIO.setup(18,GPIO.OUT)
+
+# Output LOW
+GPIO.output(17,GPIO.LOW)
 GPIO.output(18,GPIO.LOW)
 
 # Adafruit libraries
@@ -34,15 +38,25 @@ def acquire_gps(gps, timeout):
     print(f"Acquired.")
     return (gps.latitude, gps.longitude)
 
+
+def calibrate_gps(gps):
+    if(not acquire_gps(gps, 300)):
+        GPIO.output(17,GPIO.HIGH)
+    else:
+        GPIO.output(17,GPIO.LOW)
+
+
 def calibrate_imu(imu):
     while(imu.calibration_status[1] != 3 or imu.calibration_status[2] != 3):
         pass
     GPIO.output(18,GPIO.HIGH)   # Signal is calibrated
 
+
 def average_window(list, window):
     if(not list):
         return 0
     return sum(map(lambda acc: abs(acc), list[-window:]))/window
+
 
 def setup_rf(spi, CS, RESET, FREQ):
     while True:
@@ -86,7 +100,7 @@ def main():
 
     # Attempt GPS acquisition routine
     print("Acquiring GPS fix...")
-    acquire_gps(gps, 100)
+    calibrate_gps(gps)
     
     # IMU calibration routine
     print("Calibrating IMU...")

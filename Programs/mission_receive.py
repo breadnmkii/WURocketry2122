@@ -28,15 +28,13 @@ while valid_count > 0:
         rfm9x = adafruit_rfm9x.RFM9x(spi, CS, RESET, 433.0)
         rfm9x.tx_power = 23
         print('RFM9x successfully set up!')
-        grid_f = open("files/grid_number.txt", "w+")
-        comm_f = open("files/blackbox.txt", "w+")
+        grid_f = open("RF_grid_number.txt", "w+")
+        comm_f = open("RF_blackbox.txt", "w+")
 
         while True:
             # RX
             rx_packet = rfm9x.receive()
-            if rx_packet is None:
-                print('Fail\n')
-            else:
+            if rx_packet:
                 rx_data = str(rx_packet, "utf-8")
                 if rx_data != None:
                     print(f'Read: {rx_data}\n')
