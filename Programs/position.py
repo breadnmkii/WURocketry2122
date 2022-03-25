@@ -1,4 +1,5 @@
 import time
+import average as avg
 import numpy as np
 import board
 import adafruit_bno055
@@ -13,33 +14,11 @@ bno = adafruit_bno055.BNO055_I2C(i2c)
 bno.mode = adafruit_bno055.IMUPLUS_MODE
 bno.accel_range = adafruit_bno055.ACCEL_16G
 
-def average_none(data):
-    noneIdx = np.where(np.isnan(data.astype(float)))[0]
-    
-    if(None in data[0]):
-      for e in data:
-        if(not None in e):
-          data[0] = e
-          break
-    
-    if(None in data[-1]):
-      data[-1] = data[-2]
-    
-    for idx in noneIdx:
-        if(idx != 0 and idx != len(data)-1):
-            if(data.shape[1] == 3):
-              data[idx] = np.mean([data[idx-1],data[idx+1]])
-            else:
-              data[idx] = data[idx-1]
-    
-    return data
-
-
 def acc_to_pos(data_acc, data_qua, data_time):
     samples = len(data_time)
 
-    data_acc = average_none(np.array(data_acc))
-    data_qua = average_none(np.array(data_qua))
+    data_acc = avg.average_acc(avg.data_none(np.array(data_acc)))
+    data_qua = avg.data_none(np.array(data_qua))
     data_rot = np.array(list(map(lambda q: R.from_quat((*(q[1:]), q[0])).as_matrix(), data_qua)))
     abs_acc = []
     for i in range(samples):
@@ -61,7 +40,3 @@ def filter_noise(values, noise):
     for value in values:
         filtered.append(0) if (value < noise) else filtered.append(value)
     return tuple(filtered)
-
-
-if __name__ == '__main__':
-    main()
