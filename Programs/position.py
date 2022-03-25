@@ -17,8 +17,8 @@ bno.accel_range = adafruit_bno055.ACCEL_16G
 def acc_to_pos(data_acc, data_qua, data_time):
     samples = len(data_time)
 
-    data_acc = avg.average_acc(avg.data_none(np.array(data_acc)))
-    data_qua = avg.data_none(np.array(data_qua))
+    data_acc = np.array(avg.average_acc(avg.data_none(np.array(data_acc))))
+    data_qua = np.array(avg.data_none(np.array(data_qua)))
     data_rot = np.array(list(map(lambda q: R.from_quat((*(q[1:]), q[0])).as_matrix(), data_qua)))
     abs_acc = []
     for i in range(samples):
