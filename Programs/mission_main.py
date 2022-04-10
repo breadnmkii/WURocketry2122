@@ -1,4 +1,5 @@
 import os
+from sqlite3 import Time
 import time
 import datetime
 
@@ -55,6 +56,11 @@ def transmit_rf(rfm9x, string):
     tx_data = bytes(string, 'utf-8')
     rfm9x.send(tx_data)
 
+def calculate_accleration(HeightArray, TimeArray):
+    acclerationArray = []
+    for x in HeightArray:
+        height = HeightArray[x]
+        time = TimeArray[x]
 
 # Main payload routine
 def main():
