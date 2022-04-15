@@ -201,7 +201,7 @@ def main():
         if(time_thisSample - time_lastSample >= SAMPLE_FREQ):
             time_lastSample = time_thisSample
             acc = imu.linear_acceleration
-            if(None in acc):
+            if(None not in acc):
                 acc_accumulator.append(sum(acc))
             
         # Take average of latest 'ACC_WINDOW' elements of 'acc_accumulator' and check if above movement_threshold
@@ -236,7 +236,7 @@ def main():
             acc = imu.linear_acceleration
             omg = imu.gyro
 
-            if(None in acc and None in omg):
+            if(None not in acc and None not in omg):
                 acc_accumulator.append(sum(acc))
 
                 data["Acc_X"].append(acc[0])
