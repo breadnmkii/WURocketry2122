@@ -5,22 +5,13 @@ import datetime
 # SciKit Kinematics IMU Tracking
 from skinematics.imus import IMU_Base
 from scipy.spatial.transform import Rotation as R
+import pandas as pd
 
 # Board
 import board
 import busio
 import RPi.GPIO as GPIO
 from digitalio import DigitalInOut
-
-# GPIO Setup (6th Top-right pin is GPIO18)
-GPIO.setmode(GPIO.BCM)
-GPIO.setwarnings(False)
-GPIO.setup(17,GPIO.OUT)
-GPIO.setup(18,GPIO.OUT)
-
-# Output LOW
-GPIO.output(17,GPIO.LOW)
-GPIO.output(18,GPIO.LOW)
 
 # Adafruit libraries
 import adafruit_gps
@@ -31,6 +22,16 @@ import adafruit_rfm9x
 import position as pos  # IMU tracking
 import average as avg   # Averaging/Noise Filter
 import grid             # Gridding
+
+# GPIO Setup (6th Top-right pin is GPIO18)
+GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(False)
+GPIO.setup(17,GPIO.OUT)
+GPIO.setup(18,GPIO.OUT)
+
+# Output LOW
+GPIO.output(17,GPIO.LOW)
+GPIO.output(18,GPIO.LOW)
 
 ################################################################################################################################################################
 # Helper functions
