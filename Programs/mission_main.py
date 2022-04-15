@@ -32,7 +32,103 @@ import position as pos  # IMU tracking
 import average as avg   # Averaging/Noise Filter
 import grid             # Gridding
 
+################################################################################################################################################################
+# Helper functions
+def acquire_gps(gps, timeout):
+    timecount = 0
+    while not gps.has_fix:
+        gps.update()
+        timecount += 1
+        if(timecount >= timeout):
+            return None
+    return (gps.latitude, gps.longitude)
 
+
+def calibrate_gps(gps):
+    if(acquire_gps(gps, 300)):
+        GPIO.output(17,GPIO.HIGH)
+        print(f"Acquired.")
+    else:
+        GPIO.output(17,GPIO.LOW)
+        print(f"Did not acquire. Retry if necessary.")
+
+
+def calibrate_imu(imu):
+    while(imu.calibration_status[1] != 3 or imu.calibration_status[2] != 3):
+        pass
+    GPIO.output(18,GPIO.HIGH)   # Signal is calibrated
+
+
+def average_window(list, window):
+    if(not list):
+        return 0
+    return sum(map(lambda acc: abs(acc), list[-window:]))/window
+
+
+def setup_rf(spi, CS, RESET, FREQ):
+    while True:
+        # Attempt setting up RFM9x Module
+        try:
+            rfm9x = adafruit_rfm9x.RFM9x(spi, CS, RESET, FREQ)
+            rfm9x.tx_power = 23
+            print('RFM9x SET\n')
+            return rfm9x
+
+        except RuntimeError as error:
+            print('RFM9 ERR: Check wiring\n')
+
+def transmit_rf(rfm9x, string, count=1):
+    while count > 0:
+        tx_data = bytes(string, 'utf-8')
+        rfm9x.send(tx_data)
+        count -= 1
+
+class XSens(IMU_Base):
+    """Concrete class based on abstract base class IMU_Base """    
+    
+    def get_data(self, in_file, in_data=None):
+        '''Get the sampling rate, as well as the recorded data,
+        and assign them to the corresponding attributes of "self".
+        
+        Parameters
+        ----------
+        in_file : string
+                Filename of the data-file
+        in_data : not used here
+        
+        Assigns
+        -------
+        - rate : rate
+        - acc : acceleration
+        - omega : angular_velocity
+        - mag : mag_field_direction
+        '''
+        
+        # Get the sampling rate from the second line in the file
+        try:
+            fh = open(in_file)
+            fh.close()
+    
+        except FileNotFoundError:
+            print('{0} does not exist!'.format(in_file))
+            return -1
+
+        # Read the data
+        data = pd.read_csv(in_file,
+                           sep='\t',
+                           index_col=False)
+        rate = 100   # in Hz
+    
+        # Extract data from columns (Each in a 3-vector of x,y,z)
+        in_data = {
+            'rate':rate,
+            'acc':   data.filter(regex='Acc').values,
+            'omega': data.filter(regex='Gyr').values}
+
+        self._set_data(in_data)
+
+################################################################################################################################################################
+################################################################################################################################################################
 # Main payload routine
 def main():
     i2c = board.I2C()
@@ -198,99 +294,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
- ################################################################################################################################################################
-# Helper functions
-def acquire_gps(gps, timeout):
-    timecount = 0
-    while not gps.has_fix:
-        gps.update()
-        timecount += 1
-        if(timecount >= timeout):
-            return None
-    return (gps.latitude, gps.longitude)
-
-
-def calibrate_gps(gps):
-    if(acquire_gps(gps, 300)):
-        GPIO.output(17,GPIO.HIGH)
-        print(f"Acquired.")
-    else:
-        GPIO.output(17,GPIO.LOW)
-        print(f"Did not acquire. Retry if necessary.")
-
-
-def calibrate_imu(imu):
-    while(imu.calibration_status[1] != 3 or imu.calibration_status[2] != 3):
-        pass
-    GPIO.output(18,GPIO.HIGH)   # Signal is calibrated
-
-
-def average_window(list, window):
-    if(not list):
-        return 0
-    return sum(map(lambda acc: abs(acc), list[-window:]))/window
-
-
-def setup_rf(spi, CS, RESET, FREQ):
-    while True:
-        # Attempt setting up RFM9x Module
-        try:
-            rfm9x = adafruit_rfm9x.RFM9x(spi, CS, RESET, FREQ)
-            rfm9x.tx_power = 23
-            print('RFM9x SET\n')
-            return rfm9x
-
-        except RuntimeError as error:
-            print('RFM9 ERR: Check wiring\n')
-
-def transmit_rf(rfm9x, string, count=1):
-    while count > 0:
-        tx_data = bytes(string, 'utf-8')
-        rfm9x.send(tx_data)
-        count -= 1
-
-class XSens(IMU_Base):
-    """Concrete class based on abstract base class IMU_Base """    
-    
-    def get_data(self, in_file, in_data=None):
-        '''Get the sampling rate, as well as the recorded data,
-        and assign them to the corresponding attributes of "self".
-        
-        Parameters
-        ----------
-        in_file : string
-                Filename of the data-file
-        in_data : not used here
-        
-        Assigns
-        -------
-        - rate : rate
-        - acc : acceleration
-        - omega : angular_velocity
-        - mag : mag_field_direction
-        '''
-        
-        # Get the sampling rate from the second line in the file
-        try:
-            fh = open(in_file)
-            fh.close()
-    
-        except FileNotFoundError:
-            print('{0} does not exist!'.format(in_file))
-            return -1
-
-        # Read the data
-        data = pd.read_csv(in_file,
-                           sep='\t',
-                           index_col=False)
-        rate = 100   # in Hz
-    
-        # Extract data from columns (Each in a 3-vector of x,y,z)
-        in_data = {
-            'rate':rate,
-            'acc':   data.filter(regex='Acc').values,
-            'omega': data.filter(regex='Gyr').values}
-
-        self._set_data(in_data)
