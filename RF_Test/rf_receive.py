@@ -32,10 +32,14 @@ CS = DigitalInOut(board.CE1)
 RESET = DigitalInOut(board.D25)
 spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
 
+# Configure radio frequencies
+rf_channel = 7
+rf_freq = 434.550 + rf_channel * 0.1
+
 while True:
     # Attempt setting up RFM9x Module
     try:
-        rfm9x = adafruit_rfm9x.RFM9x(spi, CS, RESET, 433.0)
+        rfm9x = adafruit_rfm9x.RFM9x(spi, CS, RESET, rf_freq)
         rfm9x.tx_power = 23
         print('RFM9x successfully set up!')
         f = open("rf_test.txt", "w+")

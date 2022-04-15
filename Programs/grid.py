@@ -16,7 +16,7 @@ getcontext().prec = 7
 ## OFFICIAL NASA COORDINATES: (34.895444, -86.617000)  some farm in alabama
 ## TEST COORDINATES: 38.64871999597565, -90.30274973493445
 
-IDEAL_COORD = (Decimal('38.648719'),Decimal('-90.302749'))  ## MODIFY THIS # The expected (lat,lon) coords, obtainted from our imager.py image
+CENTER_COORD = (Decimal('34.895444'),Decimal('-86.617000'))  # The expected (lat,lon) coords, obtainted from our imager.py image
 EARTH_CIRCUMFERENCE = 24901     # (miles)
 LAT_DEGREE          = 364000    # (feet)
 LON_DEGREE          = 288200    # (feet)
@@ -25,18 +25,12 @@ GRID_LEN            = 250       # (feet)
 GRID_CEN            = 190       # (center grid_num)         ## MODIFY THIS
 GRID_ITV            = (MAP_LEN/GRID_LEN)+1    # Number of grid squares across either axis of map (21 squares)
 
-# from LAND_COORD to IDEAL_COORD calculate y,x dist
-#     above == below
-# from LAUNCH_COORD to IDEAL_COORD calculate y,x dist
-# add to IMU y,x dist
-
-# calculate grid num from summed y,x dist from 0,0 center
-
 ## Function to convert two coordinantes A->B to distance
-def coord_to_dist(coord_A, coord_B):
+def dist_between_coord(coord_A, coord_B):
     return coord_to_feet((
         Decimal(f'{coord_B[0]}') - Decimal(f'{coord_A[0]}'),
         Decimal(f'{coord_B[1]}') - Decimal(f'{coord_A[1]}')))
+
 ## Helper function to convert two coordinates' degrees difference to feet
 def coord_to_feet(coord):
     return ((Decimal(f'{coord[0]}')*Decimal(f'{LAT_DEGREE}')),
@@ -50,6 +44,10 @@ def dist_to_grid(launch_disp):
     grid_coord = tuple(map(lambda i: math.ceil(math.floor(2*i/GRID_LEN)/2), launch_disp))
     return GRID_CEN - (grid_coord[0]*GRID_ITV) + grid_coord[1]
 
+## MAIN HELPER Function to output final grid number
+def calculate_grid(launchCoord, finalDisplacement):
+    return dist_to_grid(dist_between_coord(CENTER_COORD, launchCoord) + finalDisplacement)
+
 
 
 
@@ -61,7 +59,7 @@ def main():
     current_coord = (38.663050, -90.366002)
     imu_dist = (0,0)
 
-    launch_diff = coord_to_dist(current_coord, IDEAL_COORD)
+    launch_diff = dist_between_coord(current_coord, CENTER_COORD)
     abs_dist = (imu_dist[0]+launch_diff[0], imu_dist[1]+launch_diff[1])
 
     print(abs_dist)
