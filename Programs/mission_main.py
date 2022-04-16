@@ -69,49 +69,49 @@ def transmit_rf(rfm9x, string, count=1):
         rfm9x.send(tx_data)
         count -= 1
 
-class XSens(IMU_Base):
-    """Concrete class based on abstract base class IMU_Base """    
+# class XSens(IMU_Base):
+#     """Concrete class based on abstract base class IMU_Base """    
     
-    def get_data(self, in_file, in_data=None):
-        '''Get the sampling rate, as well as the recorded data,
-        and assign them to the corresponding attributes of "self".
+#     def get_data(self, in_file, in_data=None):
+#         '''Get the sampling rate, as well as the recorded data,
+#         and assign them to the corresponding attributes of "self".
         
-        Parameters
-        ----------
-        in_file : string
-                Filename of the data-file
-        in_data : not used here
+#         Parameters
+#         ----------
+#         in_file : string
+#                 Filename of the data-file
+#         in_data : not used here
         
-        Assigns
-        -------
-        - rate : rate
-        - acc : acceleration
-        - omega : angular_velocity
-        - mag : mag_field_direction
-        '''
+#         Assigns
+#         -------
+#         - rate : rate
+#         - acc : acceleration
+#         - omega : angular_velocity
+#         - mag : mag_field_direction
+#         '''
         
-        # Get the sampling rate from the second line in the file
-        try:
-            fh = open(in_file)
-            fh.close()
+#         # Get the sampling rate from the second line in the file
+#         try:
+#             fh = open(in_file)
+#             fh.close()
     
-        except FileNotFoundError:
-            print('{0} does not exist!'.format(in_file))
-            return -1
+#         except FileNotFoundError:
+#             print('{0} does not exist!'.format(in_file))
+#             return -1
 
-        # Read the data
-        data = pd.read_csv(in_file,
-                           sep='\t',
-                           index_col=False)
-        rate = 100   # in Hz
+#         # Read the data
+#         data = pd.read_csv(in_file,
+#                            sep='\t',
+#                            index_col=False)
+#         rate = 100   # in Hz
     
-        # Extract data from columns (Each in a 3-vector of x,y,z)
-        in_data = {
-            'rate':rate,
-            'acc':   data.filter(regex='Acc').values,
-            'omega': data.filter(regex='Gyr').values}
+#         # Extract data from columns (Each in a 3-vector of x,y,z)
+#         in_data = {
+#             'rate':rate,
+#             'acc':   data.filter(regex='Acc').values,
+#             'omega': data.filter(regex='Gyr').values}
 
-        self._set_data(in_data)
+#         self._set_data(in_data)
 
 ################################################################################################################################################################
 ################################################################################################################################################################
