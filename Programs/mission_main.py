@@ -16,6 +16,8 @@ import adafruit_rfm9x
 import position as pos  # IMU tracking
 import grid             # Gridding
 
+THE_COEFFICIENT = 36
+
 def acquire_gps(gps, timeout):
     timecount = 0
     while not gps.has_fix:
@@ -191,9 +193,10 @@ def main():
 
     ### POST-FLIGHT CALCULATION ###
     position_matrix = pos.acc_to_pos(acc_data, qua_data, time_data)
+    coeff_matrix = tuple(map(lambda x: x/THE_COEFFICIENT, position_matrix))
 
     # Calculate grid number
-    grid_num = grid.calculate_grid(LAUNCH_COORD, position_matrix[-1])
+    grid_num = grid.calculate_grid(LAUNCH_COORD, coeff_matrix)
     grid_exp = grid.dist_between_coord(LAUNCH_COORD, acquire_gps(gps, 10))
     str_grid = f'{grid_num}\r\n'
     str_exp  = f'{grid_exp}\r\n'
