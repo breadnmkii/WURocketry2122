@@ -5,7 +5,6 @@ import datetime
 # Board
 import board
 import busio
-import RPi.GPIO as GPIO
 from digitalio import DigitalInOut
 
 # Adafruit libraries
@@ -32,17 +31,14 @@ def acquire_gps(gps, timeout):
 
 def calibrate_gps(gps):
     if(acquire_gps(gps, 300)):
-        GPIO.output(17,GPIO.HIGH)
         print(f"Acquired.")
     else:
-        GPIO.output(17,GPIO.LOW)
         print(f"Did not acquire. Retry if necessary.")
 
 
 def calibrate_imu(imu):
     while(imu.calibration_status[1] != 3 or imu.calibration_status[2] != 3):
         pass
-    GPIO.output(18,GPIO.HIGH)   # Signal is calibrated
 
 
 def average_window(list, window):
