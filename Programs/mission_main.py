@@ -2,25 +2,10 @@ import os
 import time
 import datetime
 
-# SciKit Kinematics IMU Tracking
-from skinematics.imus import IMU_Base
-from scipy.spatial.transform import Rotation as R
-
 # Board
 import board
 import busio
-import RPi.GPIO as GPIO
 from digitalio import DigitalInOut
-
-# GPIO Setup (6th Top-right pin is GPIO18)
-GPIO.setmode(GPIO.BCM)
-GPIO.setwarnings(False)
-GPIO.setup(17,GPIO.OUT)
-GPIO.setup(18,GPIO.OUT)
-
-# Output LOW
-GPIO.output(17,GPIO.LOW)
-GPIO.output(18,GPIO.LOW)
 
 # Adafruit libraries
 import adafruit_gps
@@ -43,18 +28,14 @@ def acquire_gps(gps, timeout):
 
 def calibrate_gps(gps):
     if(acquire_gps(gps, 300)):
-        GPIO.output(17,GPIO.HIGH)
         print(f"Acquired.")
     else:
-        GPIO.output(17,GPIO.LOW)
         print(f"Did not acquire. Retry if necessary.")
 
 
 def calibrate_imu(imu):
     while(imu.calibration_status[1] != 3 or imu.calibration_status[2] != 3):
         pass
-    GPIO.output(18,GPIO.HIGH)   # Signal is calibrated
-
 
 def average_window(list, window):
     if(not list):
@@ -74,9 +55,11 @@ def setup_rf(spi, CS, RESET, FREQ):
         except RuntimeError as error:
             print('RFM9 ERR: Check wiring\n')
 
-def transmit_rf(rfm9x, string):
-    tx_data = bytes(string, 'utf-8')
-    rfm9x.send(tx_data)
+def transmit_rf(rfm9x, string, count=1):
+    while count > 0:
+        tx_data = bytes(string, 'utf-8')
+        rfm9x.send(tx_data)
+        count -= 1
 
 
 # Main payload routine
@@ -101,8 +84,6 @@ def main():
     RESET = DigitalInOut(board.D25)
     spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
     rfm9x = setup_rf(spi, CS, RESET, rf_freq)
-
-
 
     # Attempt GPS acquisition routine
     print("Acquiring GPS fix...")
@@ -140,8 +121,7 @@ def main():
         data_f = open(f"{PATH_BLACKBOX}", "w+")
     data_f = open(f"{PATH_BLACKBOX}", "w+")
 
-    transmit_rf(rfm9x, "SETUP")
-
+    transmit_rf(rfm9x, "SETUP", count=10)
 
 
     ### PRE-LAUNCH STANDBY ###
@@ -153,22 +133,14 @@ def main():
             acc = imu.linear_acceleration
 
             # Guard against None values
-            if(acc[0]):
+            if(None not in acc):
                 acc_accumulator.append(sum(acc))
             
         # Take average of latest 'ACC_WINDOW' elements of 'acc_accumulator' and check if above movement_threshold
         if(average_window(acc_accumulator, ACC_WINDOW) > MOTION_SENSITIVITY + MOTION_LAUNCH_SENSITIVITY):
             print("Launch detected!")
             LAUNCH_COORD = acquire_gps(gps, 10)
-            current_coord = LAUNCH_COORD
-            current_grid = (0,0)
-            expected_grid = (0,0)
             hasLaunched = True
-
-            # Obtain initial launch orientation
-            quat = imu.quaternion                        # [w,x,y,z]   scalar first format (Bosch + Skin convention)
-            formatted_quat = (*(quat[1:]), quat[0])
-            init_orient = R.from_quat(formatted_quat).as_matrix()  # [x,y,z]+[w] scalar last format (Scipy convention)
             break
     
     transmit_rf(rfm9x, "LAUNCH")
@@ -200,7 +172,7 @@ def main():
             acc_data.append(acc)
             qua_data.append(qua)
 
-            if(acc[0] is not None and qua[0] is not None):
+            if(None not in acc and None not in qua):
                 acc_accumulator.append(sum(acc))
             # Check after some duration post launch for no motion (below movement_threshold)
             if((time_thisSample - time_launchStart >= MIN_IMU_TIME) and average_window(acc_accumulator, ACC_WINDOW) < MOTION_SENSITIVITY):
@@ -214,33 +186,25 @@ def main():
                 hasLanded = True
                 break
 
-    # transmit_rf(rfm9x, "LANDED\n")
+    transmit_rf(rfm9x, "LANDED\n", count=10)
     data_f.close()
 
     ### POST-FLIGHT CALCULATION ###
-    # Calculate final position
-    # Notes: Uses post processing of data
-    # 1. replace any NONE readings with average of points in between
-    # 2. assert no NONE values exist in data
-    # 3. feed data into post_track.py
-    # 4. read last value of pos data
-    # 5. feed pos data into grid.py
-    # 6. obtain final values,
     position_matrix = pos.acc_to_pos(acc_data, qua_data, time_data)
 
-    # # Scikit Position Track
-    # df = pd.DataFrame(data, index=None)
-    # df.to_csv("bno_data.txt", index=None, sep="\t", mode="w")
-    # mySensor = XSens(in_file='bno_data.txt', R_init=init_orient)
-
     # Calculate grid number
-    grid_num = grid.dist_to_grid(position_matrix[-1])
+    grid_num = grid.calculate_grid(LAUNCH_COORD, position_matrix[-1])
+    grid_exp = grid.dist_between_coord(LAUNCH_COORD, acquire_gps(gps, 10))
     str_grid = f'{grid_num}\r\n'
+    str_exp  = f'{grid_exp}\r\n'
     
     # Save data
     print("Saved data to file!")
     with open("grid_number.txt", "w+") as file:
+        file.write("Actual:\n")
         file.write(str_grid)
+        file.write("\nExpected:\n")
+        file.write(str_exp)
     
     with open("final_position.txt", "w+") as file:
         file.write(f"{position_matrix[-1][0]},{position_matrix[-1][1]}")

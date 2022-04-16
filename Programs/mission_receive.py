@@ -44,7 +44,6 @@ while True:
                             comm_f.write(rx_data)
                         print(f'Read: {rx_data}\n')
                 except UnicodeDecodeError as err:
-                    print(f"ERROR: {err}")
                     print("Unable to decode packet, skipping.")
     
     except RuntimeError as error:
