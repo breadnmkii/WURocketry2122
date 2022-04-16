@@ -2,10 +2,25 @@ import os
 import time
 import datetime
 
+# SciKit Kinematics IMU Tracking
+from skinematics.imus import IMU_Base
+from scipy.spatial.transform import Rotation as R
+
 # Board
 import board
 import busio
+import RPi.GPIO as GPIO
 from digitalio import DigitalInOut
+
+# GPIO Setup (6th Top-right pin is GPIO18)
+GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(False)
+GPIO.setup(17,GPIO.OUT)
+GPIO.setup(18,GPIO.OUT)
+
+# Output LOW
+GPIO.output(17,GPIO.LOW)
+GPIO.output(18,GPIO.LOW)
 
 # Adafruit libraries
 import adafruit_gps
@@ -14,11 +29,8 @@ import adafruit_rfm9x
 
 # External file imports
 import position as pos  # IMU tracking
-import average as avg   # Averaging/Noise Filter
 import grid             # Gridding
 
-################################################################################################################################################################
-# Helper functions
 def acquire_gps(gps, timeout):
     timecount = 0
     while not gps.has_fix:
@@ -31,14 +43,17 @@ def acquire_gps(gps, timeout):
 
 def calibrate_gps(gps):
     if(acquire_gps(gps, 300)):
+        GPIO.output(17,GPIO.HIGH)
         print(f"Acquired.")
     else:
+        GPIO.output(17,GPIO.LOW)
         print(f"Did not acquire. Retry if necessary.")
 
 
 def calibrate_imu(imu):
     while(imu.calibration_status[1] != 3 or imu.calibration_status[2] != 3):
         pass
+    GPIO.output(18,GPIO.HIGH)   # Signal is calibrated
 
 
 def average_window(list, window):
@@ -59,58 +74,11 @@ def setup_rf(spi, CS, RESET, FREQ):
         except RuntimeError as error:
             print('RFM9 ERR: Check wiring\n')
 
-def transmit_rf(rfm9x, string, count=1):
-    while count > 0:
-        tx_data = bytes(string, 'utf-8')
-        rfm9x.send(tx_data)
-        count -= 1
+def transmit_rf(rfm9x, string):
+    tx_data = bytes(string, 'utf-8')
+    rfm9x.send(tx_data)
 
-# class XSens(IMU_Base):
-#     """Concrete class based on abstract base class IMU_Base """    
-    
-#     def get_data(self, in_file, in_data=None):
-#         '''Get the sampling rate, as well as the recorded data,
-#         and assign them to the corresponding attributes of "self".
-        
-#         Parameters
-#         ----------
-#         in_file : string
-#                 Filename of the data-file
-#         in_data : not used here
-        
-#         Assigns
-#         -------
-#         - rate : rate
-#         - acc : acceleration
-#         - omega : angular_velocity
-#         - mag : mag_field_direction
-#         '''
-        
-#         # Get the sampling rate from the second line in the file
-#         try:
-#             fh = open(in_file)
-#             fh.close()
-    
-#         except FileNotFoundError:
-#             print('{0} does not exist!'.format(in_file))
-#             return -1
 
-#         # Read the data
-#         data = pd.read_csv(in_file,
-#                            sep='\t',
-#                            index_col=False)
-#         rate = 100   # in Hz
-    
-#         # Extract data from columns (Each in a 3-vector of x,y,z)
-#         in_data = {
-#             'rate':rate,
-#             'acc':   data.filter(regex='Acc').values,
-#             'omega': data.filter(regex='Gyr').values}
-
-#         self._set_data(in_data)
-
-################################################################################################################################################################
-################################################################################################################################################################
 # Main payload routine
 def main():
     i2c = board.I2C()
@@ -134,6 +102,8 @@ def main():
     spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
     rfm9x = setup_rf(spi, CS, RESET, rf_freq)
 
+
+
     # Attempt GPS acquisition routine
     print("Acquiring GPS fix...")
     calibrate_gps(gps)
@@ -142,10 +112,11 @@ def main():
     print("Calibrating IMU...")
     calibrate_imu(imu)
     print("Calibrated!")
+    
 
     # Declarations
     time_lastSample = time.time()
-    SAMPLE_FREQ = 1/100                # (in seconds)
+    FREQUENCY = 1/100                # (in seconds)
 
     hasLaunched = False              # Boolean that indicates initial rapid acceleration was detected (launched)
     hasLanded   = False              # Boolean that indicates no acceleration IF hasLaunched is true  (landed)
@@ -157,7 +128,7 @@ def main():
     MIN_IMU_TIME = 0.5               # (seconds) Minimum time IMU should collect data to prevent immediate landing event detection
     MOTION_SENSITIVITY = 3           # Amount of 3-axis acceleration needed to be read to trigger "movement" detection
     MOTION_LAUNCH_SENSITIVITY = 13   # Amount of accel added to offset for stronger initial launch accel
-    LANDED_COUNT = 10*(1/SAMPLE_FREQ)  # Number of cycles needed to be exceeded to mark as landed
+    LANDED_COUNT = 10*(1/FREQUENCY)  # Number of cycles needed to be exceeded to mark as landed
 
     acc_data = []   # 2d array
     qua_data = []   # 2d array
@@ -169,32 +140,40 @@ def main():
         data_f = open(f"{PATH_BLACKBOX}", "w+")
     data_f = open(f"{PATH_BLACKBOX}", "w+")
 
-    transmit_rf(rfm9x, "SETUP: Done", count=30)
+    transmit_rf(rfm9x, "SETUP")
 
-    ################################################################################################################################################################
+
+
     ### PRE-LAUNCH STANDBY ###
     print("Waiting for launch...")
     while(not hasLaunched):
-
-        # Acceleration sampling for motion detection
         time_thisSample = time.time()
-        if(time_thisSample - time_lastSample >= SAMPLE_FREQ):
+        if(time_thisSample - time_lastSample >= FREQUENCY):
             time_lastSample = time_thisSample
             acc = imu.linear_acceleration
-            if(None not in acc):
+
+            # Guard against None values
+            if(acc[0]):
                 acc_accumulator.append(sum(acc))
             
         # Take average of latest 'ACC_WINDOW' elements of 'acc_accumulator' and check if above movement_threshold
         if(average_window(acc_accumulator, ACC_WINDOW) > MOTION_SENSITIVITY + MOTION_LAUNCH_SENSITIVITY):
             print("Launch detected!")
             LAUNCH_COORD = acquire_gps(gps, 10)
+            current_coord = LAUNCH_COORD
+            current_grid = (0,0)
+            expected_grid = (0,0)
             hasLaunched = True
+
+            # Obtain initial launch orientation
+            quat = imu.quaternion                        # [w,x,y,z]   scalar first format (Bosch + Skin convention)
+            formatted_quat = (*(quat[1:]), quat[0])
+            init_orient = R.from_quat(formatted_quat).as_matrix()  # [x,y,z]+[w] scalar last format (Scipy convention)
             break
     
     transmit_rf(rfm9x, "LAUNCH")
 
 
-    ################################################################################################################################################################
     ### IN-FLIGHT DATA COLLECTION ###
     print("Watiting for landing...")
     acc_accumulator.clear()
@@ -204,11 +183,11 @@ def main():
     while(not hasLanded):
         time_thisSample = time.time()
 
-        # Flight data sampling
-        if(time_thisSample - time_lastSample >= SAMPLE_FREQ):
+        if(time_thisSample - time_lastSample >= FREQUENCY):
             time_lastSample = time_thisSample
 
             acc = imu.linear_acceleration
+            omg = imu.gyro
             qua = imu.quaternion
 
             # Blackbox recording (ACCx,y,z QUAx,y,z)
@@ -221,11 +200,8 @@ def main():
             acc_data.append(acc)
             qua_data.append(qua)
 
-            if(None not in acc and None not in qua):
+            if(acc[0] is not None and qua[0] is not None):
                 acc_accumulator.append(sum(acc))
-            
-            transmit_rf(rfm9x, "CHECK: Flying")
-
             # Check after some duration post launch for no motion (below movement_threshold)
             if((time_thisSample - time_launchStart >= MIN_IMU_TIME) and average_window(acc_accumulator, ACC_WINDOW) < MOTION_SENSITIVITY):
                 motionless_count += 1
@@ -238,33 +214,36 @@ def main():
                 hasLanded = True
                 break
 
-
-    ################################################################################################################################################################
-    ### POST-FLIGHT CALCULATION ###
-    transmit_rf(rfm9x, "LANDED\n", count=30)
-
+    # transmit_rf(rfm9x, "LANDED\n")
     data_f.close()
+
+    ### POST-FLIGHT CALCULATION ###
+    # Calculate final position
+    # Notes: Uses post processing of data
+    # 1. replace any NONE readings with average of points in between
+    # 2. assert no NONE values exist in data
+    # 3. feed data into post_track.py
+    # 4. read last value of pos data
+    # 5. feed pos data into grid.py
+    # 6. obtain final values,
     position_matrix = pos.acc_to_pos(acc_data, qua_data, time_data)
+
+    # # Scikit Position Track
+    # df = pd.DataFrame(data, index=None)
+    # df.to_csv("bno_data.txt", index=None, sep="\t", mode="w")
+    # mySensor = XSens(in_file='bno_data.txt', R_init=init_orient)
 
     # Calculate grid number
     grid_num = grid.dist_to_grid(position_matrix[-1])
     str_grid = f'{grid_num}\r\n'
-
-    # Calculate grid number
-    grid_num = grid.calculate_grid(LAUNCH_COORD, position_matrix[-1])
-    expected_num = grid.dist_to_grind(grid.dist_between_coord(LAUNCH_COORD, acquire_gps(gps, 20)))
-    str_grid = f'{grid_num}\r\n'
-
-    # Save grid data
+    
+    # Save data
+    print("Saved data to file!")
     with open("grid_number.txt", "w+") as file:
         file.write(str_grid)
-        file.write("\nExpected:\n")
-        file.write(expected_num)
-        file.close()
-
+    
     with open("final_position.txt", "w+") as file:
         file.write(f"{position_matrix[-1][0]},{position_matrix[-1][1]}")
-        file.close()
 
     # Transmit data
     print("Send signal loop...")
