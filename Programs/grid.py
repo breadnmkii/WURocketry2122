@@ -46,6 +46,8 @@ def dist_to_grid(launch_disp):
 
 ## MAIN HELPER Function to output final grid number
 def calculate_grid(launchCoord, finalDisplacement):
+    if(launchCoord is None):
+        return dist_to_grid(finalDisplacement)
     return dist_to_grid(dist_between_coord(CENTER_COORD, launchCoord) + finalDisplacement)
 
 

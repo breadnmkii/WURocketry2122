@@ -147,6 +147,8 @@ def main():
             break
     
     transmit_rf(rfm9x, "LAUNCH")
+    if(LAUNCH_COORD is None):
+        transmit_rf(rfm9x, "NO_LAUNCH_COORD")
 
 
     ### IN-FLIGHT DATA COLLECTION ###
@@ -190,13 +192,17 @@ def main():
                 hasLanded = True
                 break
 
+            transmit_rf(rfm9x, "FLYING")
+
     transmit_rf(rfm9x, "LANDED\n", count=10)
+    if(LANDED_COORD is None):
+                transmit_rf(rfm9x, "NO_LANDING_COORD")
     data_f.close()
 
     ### POST-FLIGHT CALCULATION ###
     position_matrix = pos.acc_to_pos(acc_data, qua_data, time_data)
-    coeff_matrix = tuple(position_matrix[-1][0]/THE_COEFFICIENT, position_matrix[-1][1]/THE_COEFFICIENT, position_matrix[-1][2])
-    print(coeff_matrix)
+    coeff_matrix = (position_matrix[-1][0]/THE_COEFFICIENT, position_matrix[-1][1]/THE_COEFFICIENT, position_matrix[-1][2])
+
     # Calculate grid number
     grid_num = grid.calculate_grid(LAUNCH_COORD, coeff_matrix)
     
