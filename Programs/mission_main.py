@@ -2,11 +2,6 @@ import os
 import time
 import datetime
 
-# SciKit Kinematics IMU Tracking
-from skinematics.imus import IMU_Base
-from scipy.spatial.transform import Rotation as R
-import pandas as pd
-
 # Board
 import board
 import busio
@@ -22,16 +17,6 @@ import adafruit_rfm9x
 import position as pos  # IMU tracking
 import average as avg   # Averaging/Noise Filter
 import grid             # Gridding
-
-# GPIO Setup (6th Top-right pin is GPIO18)
-GPIO.setmode(GPIO.BCM)
-GPIO.setwarnings(False)
-GPIO.setup(17,GPIO.OUT)
-GPIO.setup(18,GPIO.OUT)
-
-# Output LOW
-GPIO.output(17,GPIO.LOW)
-GPIO.output(18,GPIO.LOW)
 
 ################################################################################################################################################################
 # Helper functions
@@ -182,13 +167,11 @@ def main():
     qua_data = []   # 2d array
     time_data = []  # 1d array
 
-    # # Scikit Tracking Data Container
-    data = {"Acc_X":[],
-            "Acc_Y":[],
-            "Acc_Z":[],
-            "Gyr_X":[],
-            "Gyr_Y":[],
-            "Gyr_Z":[]}
+    # File IO setup
+    PATH_BLACKBOX = "blackbox.log"
+    if(not os.path.isfile(f"{PATH_BLACKBOX}")):
+        data_f = open(f"{PATH_BLACKBOX}", "w+")
+    data_f = open(f"{PATH_BLACKBOX}", "w+")
 
     transmit_rf(rfm9x, "SETUP: Done", count=30)
 
@@ -210,11 +193,6 @@ def main():
             print("Launch detected!")
             LAUNCH_COORD = acquire_gps(gps, 10)
             hasLaunched = True
-
-            # Obtain initial launch orientation
-            quat = imu.quaternion                        # [w,x,y,z]   scalar first format (Bosch + Skin convention)
-            formatted_quat = (*(quat[1:]), quat[0])
-            init_orient = R.from_quat(formatted_quat).as_matrix()  # [x,y,z]+[w] scalar last format (Scipy convention)
             break
     
     transmit_rf(rfm9x, "LAUNCH")
@@ -235,26 +213,28 @@ def main():
             time_lastSample = time_thisSample
 
             acc = imu.linear_acceleration
-            omg = imu.gyro
+            qua = imu.quaternion
 
-            if(None not in acc and None not in omg):
+            # Blackbox recording (ACCx,y,z QUAx,y,z)
+            data_f.write(f"{time_thisSample-time_launchStart}")
+            data_f.write(f"{acc[0]}\t{acc[1]}\t{acc[2]}\t")
+            data_f.write(f"{qua[0]}\t{qua[1]}\t{qua[2]}\t{qua[3]}\n")
+
+            # Data recording
+            time_data.append(time_thisSample-time_launchStart)
+            acc_data.append(acc)
+            qua_data.append(qua)
+
+            if(None not in acc and None not in qua):
                 acc_accumulator.append(sum(acc))
+            
+            transmit_rf(rfm9x, "CHECK: Flying")
 
-                data["Acc_X"].append(acc[0])
-                data["Acc_Y"].append(acc[1])
-                data["Acc_Z"].append(acc[2])
-                data["Gyr_X"].append(omg[0])
-                data["Gyr_Y"].append(omg[1])
-                data["Gyr_Z"].append(omg[2])
-            
-            
             # Check after some duration post launch for no motion (below movement_threshold)
             if((time_thisSample - time_launchStart >= MIN_IMU_TIME) and average_window(acc_accumulator, ACC_WINDOW) < MOTION_SENSITIVITY):
                 motionless_count += 1
             else:
                 motionless_count = 0    # Reset on motion detection
-
-            transmit_rf(rfm9x, "CHECK: Flying")
 
             if(motionless_count >= LANDED_COUNT):
                 print("Landing detected!")
@@ -267,20 +247,23 @@ def main():
     ### POST-FLIGHT CALCULATION ###
     transmit_rf(rfm9x, "LANDED\n", count=30)
 
-    ## Scikit Position Track
-    df = pd.DataFrame(data, index=None)
-    df.to_csv('blackbox.txt', index=None, sep="\t", mode="w")
-    mySensor = XSens(in_file='blackbox.txt', R_init=init_orient)
-    position_matrix = mySensor.calc_position()
+    data_f.close()
+    position_matrix = pos.acc_to_pos(acc_data, qua_data, time_data)
+
+    # Calculate grid number
+    grid_num = grid.dist_to_grid(position_matrix[-1])
+    str_grid = f'{grid_num}\r\n'
 
     # Calculate grid number
     grid_num = grid.calculate_grid(LAUNCH_COORD, position_matrix[-1])
     expected_num = grid.dist_to_grind(grid.dist_between_coord(LAUNCH_COORD, acquire_gps(gps, 20)))
     str_grid = f'{grid_num}\r\n'
-    
+
     # Save grid data
     with open("grid_number.txt", "w+") as file:
         file.write(str_grid)
+        file.write("\nExpected:\n")
+        file.write(expected_num)
         file.close()
 
     with open("final_position.txt", "w+") as file:
@@ -291,7 +274,6 @@ def main():
     print("Send signal loop...")
     while True:
         transmit_rf(rfm9x, f"KEY:{str_grid}")
-        transmit_rf(rfm9x, f"Expected Grid: ")
 
 if __name__ == '__main__':
     main()
