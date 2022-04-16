@@ -1,6 +1,7 @@
 import os
 import time
 import datetime
+from turtle import position
 
 # Board
 import board
@@ -194,8 +195,8 @@ def main():
 
     ### POST-FLIGHT CALCULATION ###
     position_matrix = pos.acc_to_pos(acc_data, qua_data, time_data)
-    coeff_matrix = tuple(map(lambda x: x/THE_COEFFICIENT, position_matrix))
-
+    coeff_matrix = tuple(position_matrix[-1][0]/THE_COEFFICIENT, position_matrix[-1][1]/THE_COEFFICIENT, position_matrix[-1][2])
+    print(coeff_matrix)
     # Calculate grid number
     grid_num = grid.calculate_grid(LAUNCH_COORD, coeff_matrix)
     
