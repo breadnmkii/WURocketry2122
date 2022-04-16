@@ -192,7 +192,7 @@ def main():
                 hasLanded = True
                 break
 
-            transmit_rf(rfm9x, f"t+{(time_thisSample-time_launchStart)/1000}s")
+            transmit_rf(rfm9x, f"t+{time_thisSample-time_launchStart}s")
 
     transmit_rf(rfm9x, "LANDED\n", count=10)
     if(LANDED_COORD is None):
