@@ -185,6 +185,7 @@ def main():
             if(motionless_count >= LANDED_COUNT):
                 print("Landing detected!")
                 print(f"Launch duration:{time_thisSample-time_launchStart}")
+                LANDED_COORD = acquire_gps(gps, 10)
                 hasLanded = True
                 break
 
@@ -197,7 +198,11 @@ def main():
 
     # Calculate grid number
     grid_num = grid.calculate_grid(LAUNCH_COORD, coeff_matrix)
-    grid_exp = grid.dist_between_coord(LAUNCH_COORD, acquire_gps(gps, 10))
+    
+    if(LANDED_COORD is not None):
+        grid_exp = grid.dist_between_coord(LAUNCH_COORD, LANDED_COORD)
+    else:
+        grid_exp = "No GPS Validation"
     str_grid = f'{grid_num}\r\n'
     str_exp  = f'{grid_exp}\r\n'
     
