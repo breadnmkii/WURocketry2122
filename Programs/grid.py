@@ -42,7 +42,12 @@ def coord_to_feet(coord):
 # 2. Translates grid coordinate from (0,0) into grid number (i.e. (0,0) -> #220)
 def dist_to_grid(launch_disp):
     grid_coord = tuple(map(lambda i: math.ceil(math.floor(2*i/GRID_LEN)/2), launch_disp))
-    return GRID_CEN - (grid_coord[0]*GRID_ITV) + grid_coord[1]
+    grid_num = GRID_CEN - (grid_coord[0]*GRID_ITV) + grid_coord[1]
+    if(grid_num < 0):
+        return 0
+    if(grid_num > 399):
+        return 399
+    return grid_num
 
 ## MAIN HELPER Function to output final grid number
 def calculate_grid(launchCoord, finalDisplacement):
