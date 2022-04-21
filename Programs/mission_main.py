@@ -145,6 +145,8 @@ def main():
             LAUNCH_COORD = acquire_gps(gps, 10)
             hasLaunched = True
             break
+            
+        transmit_rf(rfm9x, f"Wait: t+{time_thisSample-time_launchStart} s")
     
     transmit_rf(rfm9x, "LAUNCH")
     if(LAUNCH_COORD is None):
@@ -192,7 +194,7 @@ def main():
                 hasLanded = True
                 break
 
-            transmit_rf(rfm9x, f"t+{time_thisSample-time_launchStart}s")
+            transmit_rf(rfm9x, f"Launch: t+{time_thisSample-time_launchStart} s")
 
     transmit_rf(rfm9x, "LANDED\n", count=10)
     if(LANDED_COORD is None):
